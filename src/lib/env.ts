@@ -6,7 +6,8 @@ const DEV_SECRET = "stagecraft-dev-secret-change-me-in-production-0123456789";
 export function rootSecret(): string {
   const s = process.env.STAGECRAFT_SECRET;
   if (s && s.length >= 32) return s;
-  if (process.env.NODE_ENV === "production" && !isDemo()) {
+  if (process.env.NODE_ENV === "production" && process.env.STAGECRAFT_ALLOW_DEV_SECRET !== "1") {
+    // Never sign real credentials with a key derivable from public source.
     throw new Error("STAGECRAFT_SECRET (>= 32 chars) is required in production");
   }
   return DEV_SECRET;

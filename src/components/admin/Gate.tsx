@@ -3,10 +3,11 @@ import { ShieldAlert } from "lucide-react";
 import { buttonClass } from "@/components/ui/primitives";
 
 /** Friendly full-page message for people who can't see an admin page. */
-export function Gate({ kind, next = "/admin" }: { kind: "signin" | "forbidden" | "notfound"; next?: string }) {
+export function Gate({ kind, next = "/admin" }: { kind: "signin" | "forbidden" | "adminonly" | "notfound"; next?: string }) {
   const copy = {
     signin: { title: "Sign in to open the control room", body: "Organizers and house admins run events from here." },
     forbidden: { title: "This area is for organizers", body: "Ask your house secretary or WebOps team for organizer access. Meanwhile, the live events are waiting for you." },
+    adminonly: { title: "Admins only", body: "User management and the audit log are limited to house admins. Your organizer tools are on the dashboard." },
     notfound: { title: "Event not found", body: "It may have been removed, or the link is wrong." },
   }[kind];
   return (
@@ -18,6 +19,10 @@ export function Gate({ kind, next = "/admin" }: { kind: "signin" | "forbidden" |
         {kind === "signin" ? (
           <Link href={`/login?next=${encodeURIComponent(next)}`} className={buttonClass("primary")}>
             Sign in
+          </Link>
+        ) : kind === "adminonly" ? (
+          <Link href="/admin" className={buttonClass("primary")}>
+            Back to dashboard
           </Link>
         ) : (
           <Link href="/" className={buttonClass("primary")}>

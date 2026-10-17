@@ -1,5 +1,7 @@
 "use server";
 
+import { isDemo } from "@/lib/env";
+
 import { and, eq, ne } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -198,6 +200,8 @@ export async function updateEvent(eventId: string, _prev: EventFormState, form: 
 export async function resetDemo() {
   const v = await getViewer();
   if (!v || v.role !== "admin") throw new Error("Admins only");
+  // Destructive by design, so it only exists on demo deployments.
+  if (!isDemo()) throw new Error("Demo reset is disabled on this deployment");
   const db = await getDb();
   const { wipe, seed } = await import("@/db/seed");
   await wipe(db);

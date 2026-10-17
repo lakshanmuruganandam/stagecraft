@@ -3,7 +3,12 @@ import { getDb } from "@/db";
 import { canManageEvent, getViewer } from "@/lib/auth";
 import { getEventRow, participants } from "@/server/queries";
 
-const csv = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+/** Quote, and neutralise cells a spreadsheet would execute as formulas. */
+const csv = (v: unknown) => {
+  let s = String(v ?? "");
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  return `"${s.replace(/"/g, '""')}"`;
+};
 
 /** Organizer-only CSV of everyone who took part, for house records. */
 export async function GET(_req: NextRequest, ctx: RouteContext<"/api/events/[id]/export">) {
@@ -22,6 +27,7 @@ export async function GET(_req: NextRequest, ctx: RouteContext<"/api/events/[id]
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="${event.slug}-participants.csv"`,
+      "Cache-Control": "no-store",
     },
   });
 }

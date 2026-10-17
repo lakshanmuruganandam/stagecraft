@@ -9,7 +9,14 @@ export async function POST(req: NextRequest, ctx: RouteContext<"/api/events/[id]
   try {
     // CSRF: browsers always send Origin on cross-site POSTs; refuse mismatches.
     const origin = req.headers.get("origin");
-    if (origin && new URL(origin).host !== req.headers.get("host")) throw new HttpError(403, "Cross-site request blocked");
+    let sameSite = true;
+    try {
+      sameSite = !origin || new URL(origin).host === req.headers.get("host");
+    } catch {
+      sameSite = false;
+    }
+    if (!sameSite) throw new HttpError(403, "Cross-site request blocked");
+    if (!req.headers.get("content-type")?.startsWith("application/json")) throw new HttpError(415, "Send JSON");
     const viewer = await getViewer();
     if (!viewer) throw new HttpError(401, "Sign in to take part");
     const body = await req.json().catch(() => null);

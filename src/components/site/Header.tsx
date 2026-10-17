@@ -73,9 +73,12 @@ async function UserMenu() {
             <p className="text-xs text-ink-400">
               {v.house?.name ?? "No house"} · {v.role}
             </p>
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               <Link href="/me" className={buttonClass("outline", "sm")}>
-                <Sparkles size={14} /> My credentials
+                <Sparkles size={14} /> Credentials
+              </Link>
+              <Link href="/account" className={buttonClass("outline", "sm")}>
+                <ShieldCheck size={14} /> Account
               </Link>
               <form action={signOut}>
                 <HereInput />
@@ -88,7 +91,7 @@ async function UserMenu() {
         ) : (
           <div className="border-b border-white/6 p-2 pb-3">
             <Link href="/login" className={`${buttonClass("primary", "sm")} w-full`}>
-              Sign in with student email
+              Sign in or create account
             </Link>
           </div>
         )}

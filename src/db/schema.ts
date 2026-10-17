@@ -13,7 +13,9 @@ const id = () => text("id").primaryKey();
 const createdAt = () =>
   integer("created_at", { mode: "number" })
     .notNull()
-    .default(sql`(unixepoch() * 1000)`);
+    .default(sql`(unixepoch() * 1000)`)
+    // Millisecond precision from the app; the SQL default is a fallback.
+    .$defaultFn(() => Date.now());
 
 /* ───────────────────────── People & houses ───────────────────────── */
 
@@ -36,9 +38,38 @@ export const users = sqliteTable(
     houseId: text("house_id").references(() => houses.id),
     role: text("role").$type<Role>().notNull().default("member"),
     mutedUntil: integer("muted_until"),
+    /** scrypt$N$r$p$salt$hash — null for accounts that can't use a password. */
+    passwordHash: text("password_hash"),
+    suspendedAt: integer("suspended_at"),
+    suspendedReason: text("suspended_reason"),
+    lastLoginAt: integer("last_login_at"),
     createdAt: createdAt(),
   },
   (t) => [index("users_house_idx").on(t.houseId)],
+);
+
+/**
+ * Server-side sessions. The cookie carries a random token; only its
+ * SHA-256 is stored, so a database leak can't be replayed as a login.
+ * Rows can be revoked individually ("sign out that device") or in bulk
+ * (suspension, role change, password change).
+ */
+export const sessions = sqliteTable(
+  "sessions",
+  {
+    id: id(),
+    tokenHash: text("token_hash").notNull().unique(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    userAgent: text("user_agent"),
+    ip: text("ip"),
+    createdAt: createdAt(),
+    lastSeenAt: integer("last_seen_at").notNull(),
+    expiresAt: integer("expires_at").notNull(),
+    revokedAt: integer("revoked_at"),
+  },
+  (t) => [index("sessions_user_idx").on(t.userId)],
 );
 
 /* ───────────────────────────── Events ────────────────────────────── */

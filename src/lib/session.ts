@@ -1,24 +1,9 @@
 import "server-only";
-import { SignJWT, jwtVerify } from "jose";
-import { rootSecret } from "./env";
+import { createHash, randomBytes } from "node:crypto";
 
 export const SESSION_COOKIE = "sc_session";
-const key = () => new TextEncoder().encode(rootSecret());
+export const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 14; // 14 days, sliding
+export const SESSION_TOUCH_MS = 1000 * 60 * 5; // refresh lastSeen at most every 5 min
 
-export async function encodeSession(uid: string) {
-  return new SignJWT({ uid })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("30d")
-    .sign(key());
-}
-
-export async function decodeSession(token: string | undefined): Promise<string | null> {
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, key(), { algorithms: ["HS256"] });
-    return typeof payload.uid === "string" ? payload.uid : null;
-  } catch {
-    return null;
-  }
-}
+export const newSessionToken = () => randomBytes(32).toString("base64url");
+export const hashToken = (token: string) => createHash("sha256").update(token).digest("base64url");

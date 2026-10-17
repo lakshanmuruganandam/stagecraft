@@ -2,8 +2,21 @@ import type { NextRequest } from "next/server";
 import { getViewer, canManageEvent } from "@/lib/auth";
 import { adminChannel, latestSeq, publicChannel, readSince, userChannel, waitForChange, type Channel } from "@/lib/live";
 import { getEventRow } from "@/server/queries";
+import { eq } from "drizzle-orm";
+import { getDb, schema } from "@/db";
 
 export const maxDuration = 60;
+
+/** Session still valid, account active and still allowed to manage the event? */
+async function stillManager(sessionId: string, event: { hostHouseIds: string[]; createdBy: string | null }) {
+  const db = await getDb();
+  const [row] = await db
+    .select({ u: schema.users, revokedAt: schema.sessions.revokedAt, expiresAt: schema.sessions.expiresAt })
+    .from(schema.sessions)
+    .innerJoin(schema.users, eq(schema.users.id, schema.sessions.userId))
+    .where(eq(schema.sessions.id, sessionId));
+  return !!row && !row.revokedAt && row.expiresAt > Date.now() && !row.u.suspendedAt && canManageEvent(row.u, event);
+}
 
 // Connections per event on this instance, for the "watching now" badge.
 const g = globalThis as unknown as { __scPresence?: Map<string, number> };
@@ -20,8 +33,10 @@ export async function GET(req: NextRequest) {
   if (!event) return new Response("Unknown event", { status: 404 });
 
   const viewer = await getViewer();
+  const manager = canManageEvent(viewer, event);
+  if (event.status === "draft" && !manager) return new Response("Unknown event", { status: 404 });
   const channels: Channel[] = [publicChannel(event.id)];
-  if (canManageEvent(viewer, event)) channels.push(adminChannel(event.id));
+  if (manager) channels.push(adminChannel(event.id));
   if (viewer) channels.push(userChannel(viewer.id));
 
   const resume = req.headers.get("last-event-id") ?? req.nextUrl.searchParams.get("cursor");
@@ -43,6 +58,7 @@ export async function GET(req: NextRequest) {
       presence.set(event.id, (presence.get(event.id) ?? 0) + 1);
       const started = Date.now();
       let lastBeat = 0;
+      let lastAuth = Date.now();
       send(`retry: 1500\n\n`);
       try {
         while (!signal.aborted && Date.now() - started < lifetime) {
@@ -55,6 +71,12 @@ export async function GET(req: NextRequest) {
           if (Date.now() - lastBeat > 10_000) {
             lastBeat = Date.now();
             send(`data: ${JSON.stringify({ type: "presence", payload: { count: presence.get(event.id) ?? 1 } })}\n\n`);
+          }
+          // Re-authorize periodically so suspension, demotion or sign-out
+          // cuts off privileged channels within seconds, not at reconnect.
+          if (manager && Date.now() - lastAuth > 30_000) {
+            lastAuth = Date.now();
+            if (!(await stillManager(viewer!.sessionId, event))) break;
           }
           await waitForChange(channels, 1000, signal);
         }

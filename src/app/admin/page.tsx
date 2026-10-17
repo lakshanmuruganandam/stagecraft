@@ -1,7 +1,8 @@
+import { isDemo } from "@/lib/env";
 import Link from "next/link";
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { ArrowRight, Award, CalendarPlus, Radio, Trophy, Users } from "lucide-react";
+import { ArrowRight, Award, CalendarPlus, Radio, ShieldCheck, Trophy, Users } from "lucide-react";
 import { getViewer } from "@/lib/auth";
 import { certificatesFor, engagement, leaderboard, listAllEventsForAdmin, listHouses } from "@/server/queries";
 import { AdminSkeleton, Gate } from "@/components/admin/Gate";
@@ -9,6 +10,7 @@ import { ResetDemo } from "@/components/admin/ResetDemo";
 import { Badge, buttonClass, OnAir, SectionTitle } from "@/components/ui/primitives";
 import { fmtDate, fmtTime, KIND_LABEL } from "@/lib/format";
 import type { EventDTO, HouseDTO } from "@/lib/types";
+import { securityStats } from "./_lib/users";
 
 export const metadata: Metadata = { title: "Control room" };
 
@@ -27,9 +29,10 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
   const { reset } = await searchParams;
 
   const [events, houses, board] = await Promise.all([listAllEventsForAdmin(v), listHouses(), leaderboard()]);
-  const [eng, certs] = await Promise.all([
+  const [eng, certs, security] = await Promise.all([
     Promise.all(events.map((e) => engagement(e.id))),
     Promise.all(events.map((e) => certificatesFor({ eventId: e.id }))),
+    v.role === "admin" ? securityStats() : Promise.resolve(null),
   ]);
   const myHouse = board.find((h) => h.id === v.houseId);
   const rank = myHouse ? board.indexOf(myHouse) + 1 : null;
@@ -40,11 +43,14 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
     { title: "Ended", eyebrow: "Archive", items: events.filter((e) => e.status === "ended") },
   ];
 
-  const stats = [
+  const stats: { icon: typeof Radio; label: string; value: string | number; href?: string; note?: string }[] = [
     { icon: Radio, label: "Live events", value: groups[0].items.length },
     { icon: Users, label: "People who took part", value: eng.reduce((a, b) => a + b.participants, 0) },
     { icon: Award, label: "Certificates issued", value: certs.reduce((a, b) => a + b.length, 0) },
     { icon: Trophy, label: myHouse ? `${myHouse.name} points · #${rank}` : "House points", value: myHouse?.points ?? "–" },
+    ...(security
+      ? [{ icon: ShieldCheck, label: "Security", value: security.activeSessions24h, note: `active sessions (24h) · ${security.suspended} suspended`, href: "/admin/users?status=suspended" }]
+      : []),
   ];
 
   return (
@@ -58,7 +64,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
           <p className="mt-1 text-ink-300">Every event you can run, in one place.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {v.role === "admin" && <ResetDemo />}
+          {v.role === "admin" && isDemo() && <ResetDemo />}
           <Link href="/admin/events/new" className={buttonClass("primary")}>
             <CalendarPlus size={16} /> New event
           </Link>
@@ -67,18 +73,29 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
 
       {reset && <p className="mb-6 rounded-xl border border-ok/30 bg-ok/10 px-4 py-3 text-sm text-[#c9f7e4]">Demo data was reset to a fresh state.</p>}
 
-      <dl className="mb-12 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {stats.map(({ icon: Icon, label, value }) => (
-          <div key={label} className="card p-4 sm:p-5">
+      <dl className={`mb-12 grid grid-cols-2 gap-3 ${stats.length > 4 ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
+        {stats.map(({ icon: Icon, label, value, note, href }) => (
+          <div key={label} className="card relative p-4 sm:p-5">
             <dt className="flex items-center gap-2 text-xs text-ink-400">
               <Icon size={14} className="text-spot-400" /> {label}
             </dt>
             <dd className="timecode mt-2 text-3xl font-semibold text-white">{value}</dd>
+            {note && (
+              <dd className="mt-1 text-[0.7rem] text-ink-400">
+                {href ? (
+                  <Link href={href} className="after:absolute after:inset-0 hover:text-white">
+                    {note}
+                  </Link>
+                ) : (
+                  note
+                )}
+              </dd>
+            )}
           </div>
         ))}
       </dl>
 
-      <div className="space-y-10">
+      <div id="events" className="scroll-mt-28 space-y-10">
         {groups.map((g) =>
           g.items.length ? (
             <section key={g.title}>

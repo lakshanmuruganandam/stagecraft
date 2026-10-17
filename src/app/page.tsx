@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { connection } from "next/server";
@@ -26,6 +27,9 @@ export default function Home() {
 function Hero() {
   return (
     <section className="relative overflow-hidden">
+      <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 hidden w-[62%] lg:block">
+        <Image src="/covers/hero.webp" alt="" fill priority sizes="62vw" className="object-cover object-left opacity-70 [mask-image:linear-gradient(90deg,transparent,black_35%,black_70%,transparent),linear-gradient(180deg,black_60%,transparent)] [mask-composite:intersect]" />
+      </div>
       <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[560px] w-[900px] -translate-x-1/2 bg-[radial-gradient(closest-side,rgb(255_169_40/0.18),transparent)]" />
       <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 bg-[conic-gradient(from_180deg_at_50%_0%,transparent_150deg,rgb(255_210_138/0.10)_180deg,transparent_210deg)]" />
       <div className="relative mx-auto max-w-7xl px-4 pb-14 pt-16 sm:px-6 sm:pt-24">

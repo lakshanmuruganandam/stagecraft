@@ -26,10 +26,29 @@ const LAST = ["Sharma", "Iyer", "Khan", "Reddy", "Menon", "Gupta", "Nair", "Das"
 export { DEMO_EMAILS } from "@/lib/demo";
 import { DEMO_EMAILS } from "@/lib/demo";
 
+/** Shared password for the seeded demo accounts (shown on the sign-in page in demo mode). */
+export const DEMO_PASSWORD = "house-cup-2026";
+
 export async function seedIfEmpty(db: DB) {
   const [{ n }] = await db.select({ n: sql<number>`count(*)` }).from(s.houses);
-  if (n > 0) return;
-  await seed(db);
+  if (n === 0) await seed(db);
+  await ensureDemoPasswords(db);
+}
+
+/** Demo accounts get a real (hashed) password so judges can test the actual login. */
+/** Production bootstrap: the twelve houses are reference data, nothing else. */
+export async function seedHousesIfEmpty(db: DB) {
+  const [{ n }] = await db.select({ n: sql<number>`count(*)` }).from(s.houses);
+  if (n === 0) await db.insert(s.houses).values(HOUSES.map((h) => ({ id: `h_${h.slug}`, ...h })));
+}
+
+export async function ensureDemoPasswords(db: DB) {
+  const { isNull, like, and } = await import("drizzle-orm");
+  const missing = await db.select({ id: s.users.id }).from(s.users).where(and(like(s.users.email, "%.demo"), isNull(s.users.passwordHash)));
+  if (!missing.length) return;
+  const { hashPassword } = await import("@/lib/password");
+  const hash = await hashPassword(DEMO_PASSWORD);
+  for (const u of missing) await db.update(s.users).set({ passwordHash: hash }).where(sql`id = ${u.id}`);
 }
 
 export async function wipe(db: DB) {

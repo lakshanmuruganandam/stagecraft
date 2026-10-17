@@ -163,6 +163,8 @@ export const commands = {
     manager: true,
     schema: z.object({ messageId: id, pinned: z.boolean() }),
     async run(ctx, { messageId, pinned }) {
+      const msg = await ctx.db.query.chatMessages.findFirst({ where: and(eq(s.chatMessages.id, messageId), eq(s.chatMessages.eventId, ctx.event.id), eq(s.chatMessages.hidden, false)) });
+      if (!msg) throw new HttpError(404, "Message not found");
       if (pinned) await ctx.db.update(s.chatMessages).set({ pinned: false }).where(eq(s.chatMessages.eventId, ctx.event.id));
       await ctx.db.update(s.chatMessages).set({ pinned }).where(and(eq(s.chatMessages.id, messageId), eq(s.chatMessages.eventId, ctx.event.id)));
       const dto = await chatDTO(ctx.db, messageId);
@@ -173,6 +175,15 @@ export const commands = {
     manager: true,
     schema: z.object({ userId: id, minutes: z.number().int().min(0).max(24 * 60) }),
     async run(ctx, { userId, minutes }) {
+      if (userId === ctx.viewer.id) throw new HttpError(400, "You can't mute yourself");
+      const target = await ctx.db.query.users.findFirst({ where: eq(s.users.id, userId) });
+      if (!target) throw new HttpError(404, "User not found");
+      if (target.role === "admin" || (target.role === "organizer" && ctx.viewer.role !== "admin")) throw new HttpError(403, "You can't mute another organizer or an admin");
+      // Moderators may only act on people taking part in *this* event.
+      const inEvent =
+        (await ctx.db.query.chatMessages.findFirst({ where: and(eq(s.chatMessages.eventId, ctx.event.id), eq(s.chatMessages.userId, userId)) })) ??
+        (await ctx.db.query.questions.findFirst({ where: and(eq(s.questions.eventId, ctx.event.id), eq(s.questions.userId, userId)) }));
+      if (!inEvent) throw new HttpError(403, "That person hasn't taken part in this event");
       await ctx.db.update(s.users).set({ mutedUntil: minutes ? Date.now() + minutes * 60_000 : null }).where(eq(s.users.id, userId));
       await publish(userChannel(userId), "toast", { message: minutes ? `A moderator muted you for ${minutes} minutes.` : "You've been unmuted." });
       await audit(ctx, "user.mute", `${userId} for ${minutes}m`);
@@ -480,8 +491,9 @@ export const commands = {
     manager: true,
     schema: z.object({ segmentId: id.nullable() }),
     async run(ctx, { segmentId }) {
+      const seg = segmentId ? await ctx.db.query.segments.findFirst({ where: and(eq(s.segments.id, segmentId), eq(s.segments.eventId, ctx.event.id)) }) : null;
+      if (segmentId && !seg) throw new HttpError(404, "Segment not found");
       await ctx.db.update(s.events).set({ currentSegmentId: segmentId }).where(eq(s.events.id, ctx.event.id));
-      const seg = segmentId ? await ctx.db.query.segments.findFirst({ where: eq(s.segments.id, segmentId) }) : null;
       if (seg) await ctx.db.update(s.events).set({ lowerThird: seg.speaker ? `${seg.title} · ${seg.speaker}` : seg.title }).where(eq(s.events.id, ctx.event.id));
       return pushEvent(ctx);
     },
@@ -576,7 +588,9 @@ export async function runCommand(db: DB, viewer: Viewer, eventId: string, raw: u
   const cmd = commands[name] as Def<z.ZodType>;
   const event = await db.query.events.findFirst({ where: eq(s.events.id, eventId) });
   if (!event) throw new HttpError(404, "Event not found");
-  if (cmd.manager && !canManageEvent(viewer, event)) throw new HttpError(403, "Organizers only");
+  const manager = canManageEvent(viewer, event);
+  if (!manager && event.status === "draft") throw new HttpError(404, "Event not found");
+  if (cmd.manager && !manager) throw new HttpError(403, "Organizers only");
   const parsed = cmd.schema.safeParse(raw);
   if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Invalid input");
   return cmd.run({ db, viewer, event }, parsed.data);

@@ -22,7 +22,7 @@ export default function StagePage({ params, searchParams }: PageProps<"/e/[slug]
 async function Loader({ params, searchParams }: Pick<PageProps<"/e/[slug]/stage">, "params" | "searchParams">) {
   const [{ slug }, sp] = await Promise.all([params, searchParams]);
   const row = await getEventRow(slug);
-  if (!row) notFound();
+  if (!row || row.status === "draft") notFound();
   // Stage output is the public view, even when an organizer opens it.
   const snap = await getSnapshot(row.id, null);
   if (!snap) notFound();

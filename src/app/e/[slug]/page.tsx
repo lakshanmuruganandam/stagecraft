@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getViewer } from "@/lib/auth";
+import { canManageEvent, getViewer } from "@/lib/auth";
 import { certificatesFor, getEventRow, getSnapshot } from "@/server/queries";
 import { LiveProvider } from "@/components/live/LiveProvider";
 import { EventRoom } from "@/components/live/EventRoom";
@@ -25,6 +25,7 @@ async function Room({ params }: { params: PageProps<"/e/[slug]">["params"] }) {
   const row = await getEventRow(slug);
   if (!row) notFound();
   const viewer = await getViewer();
+  if (row.status === "draft" && !canManageEvent(viewer, row)) notFound();
   const [snap, certs] = await Promise.all([getSnapshot(row.id, viewer), viewer ? certificatesFor({ userId: viewer.id }) : Promise.resolve([])]);
   if (!snap) notFound();
   return (

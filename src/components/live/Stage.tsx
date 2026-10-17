@@ -3,7 +3,7 @@
 import { Tv } from "lucide-react";
 import { useLive } from "./LiveProvider";
 import { useClientValue } from "./useNow";
-import { embedUrl } from "@/lib/format";
+import { COVER, embedUrl } from "@/lib/format";
 import { REACTIONS } from "@/lib/types";
 
 /** Stream embed + lower third + floating reactions. */
@@ -20,11 +20,10 @@ export function Player() {
           src={src}
           title={`${e.title} live stream`}
           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-          allowFullScreen
           className="absolute inset-0 size-full"
         />
       ) : (
-        <div className="absolute inset-0 grid place-items-center" style={{ background: `radial-gradient(80% 80% at 50% 0%, hsl(${e.hue} 70% 40% / .45), #050507 70%)` }}>
+        <div className="absolute inset-0 grid place-items-center bg-cover bg-center" style={{ backgroundImage: `linear-gradient(180deg, rgb(5 5 7 / .55), rgb(5 5 7 / .85)), url(${COVER[e.kind]})` }}>
           <div className="text-center">
             <Tv className="mx-auto text-ink-400" size={36} />
             <p className="mt-3 font-display text-xl text-white">{e.status === "ended" ? "This show has wrapped" : e.status === "live" ? "Stream starting soon" : "The stage is being set"}</p>

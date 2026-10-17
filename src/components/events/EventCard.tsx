@@ -1,7 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, Clock } from "lucide-react";
 import type { EventDTO, HouseDTO } from "@/lib/types";
-import { fmtDate, fmtTime, KIND_LABEL } from "@/lib/format";
+import { COVER, fmtDate, fmtTime, KIND_LABEL } from "@/lib/format";
 import { Badge, OnAir } from "@/components/ui/primitives";
 
 export function EventCard({ event, houses, size = "md" }: { event: EventDTO; houses: HouseDTO[]; size?: "md" | "lg" }) {
@@ -15,7 +16,8 @@ export function EventCard({ event, houses, size = "md" }: { event: EventDTO; hou
     >
       {/* Stage: a lit backdrop in the event's hue */}
       <div className={`relative overflow-hidden ${size === "lg" ? "h-44 sm:h-52" : "h-32"}`}>
-        <div className="absolute inset-0" style={{ background: `radial-gradient(120% 90% at 50% 0%, hsl(${event.hue} 85% 55% / .55), transparent 65%), linear-gradient(180deg, hsl(${event.hue} 40% 14%), #0d0d12)` }} />
+        <Image src={COVER[event.kind]} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover opacity-80 transition duration-700 group-hover:scale-[1.04] group-hover:opacity-100" />
+        <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, hsl(${event.hue} 70% 30% / .35), transparent 40%, #0d0d12 100%)` }} />
         <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
         <div aria-hidden className="absolute left-1/2 top-0 h-full w-2/3 -translate-x-1/2 bg-[conic-gradient(from_180deg_at_50%_0%,transparent_160deg,rgb(255_255_255/0.12)_180deg,transparent_200deg)] opacity-70 transition group-hover:opacity-100" />
         <div className="absolute left-4 top-4 flex gap-2">

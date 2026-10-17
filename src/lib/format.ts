@@ -46,3 +46,11 @@ export function embedUrl(url: string | null, host: string): string | null {
   }
   return null;
 }
+
+/** Generated stage art per event kind (public/covers). */
+export const COVER: Record<keyof typeof KIND_LABEL, string> = {
+  talk: "/covers/talk.webp",
+  cultural: "/covers/cultural.webp",
+  esports: "/covers/esports.webp",
+  hackathon: "/covers/hackathon.webp",
+};
