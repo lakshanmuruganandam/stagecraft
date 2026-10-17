@@ -1,6 +1,8 @@
 # StageCraft
 
-**Live events where the audience is part of the show.** Built for **Build-a-Thon 1.0, Theme 03: StageCraft (Live Event & Cultural Streamliner)**.
+**Live events where the audience is part of the show.** Built for **Build-a-Thon 1.0, Theme 03: StageCraft (Live Event & Cultural Streamliner)**. It also grows into a complete house platform covering Themes 01, 02 and 04.
+
+**Live:** https://stagecraft-xi.vercel.app · **Repo:** https://github.com/lakshanmuruganandam/stagecraft
 
 ![StageCraft stage](public/covers/hero.webp)
 
@@ -60,6 +62,15 @@ Then:
 - Recipients get a live "Your certificate is ready" toast.
 - Each certificate has a print-ready page (A4 landscape PDF), a **PNG** rendered with `next/og`, a QR code to its verification page, **Add to LinkedIn**, and a **signed JSON** download.
 - **Verification**: `/verify/:id` checks the signature and revocation status; `/verify` checks a JSON file **in the browser** against `/.well-known/stagecraft-issuer.json`. Admins and organizers can **revoke** certificates with a reason.
+
+### Beyond Theme 03: one platform for the whole house
+- **House Hub (Theme 01):** `/houses` shows a live energy ribbon of every house's share of points; each house gets a home page with art, rank, a points sparkline, a "common room" of what's live, hosted events, top contributors and awards. `/calendar` is an **event radar** (month and agenda views, filters, IST) with `.ics` downloads, a subscribable feed (`/api/calendar/feed.ics`) and Google Calendar links.
+- **Proof of presence (Theme 02):** the stage screen shows a **rotating HMAC-signed QR code**. Codes expire every 30 seconds, so they only work in the room. Scanning it records attendance, which counts toward participation certificates and house points.
+- **House Odyssey (Theme 04):** a pure achievements engine (12 tiered badges, XP, levels and 12 quests) derived from real activity; public portfolios at `/u/:id` with a **holographic 3D identity card**; and a **quest constellation** at `/quests` with house lore.
+- **Spotlight broadcasts:** an admin announcement that dims every connected screen across the platform and spotlights the message, with confetti in the sender's house colour.
+- **Command palette:** ⌘K / Ctrl+K jumps to any event or page.
+- **Two themes:** *Daylight* (the default: bright paper, crisp ink, living colour) and *Stage* (dark broadcast). Every colour is a CSS-variable token, so whole subtrees can switch; the OBS overlay and video areas stay in Stage.
+- **Motion:** a site-wide living background of house-colour light that follows the cursor, a 3D hero built from live data (a real poll, the top question, the live match and a signed certificate), a broadcast-style activity ticker, count-ups, cursor-glow cards, a certificate claim ceremony and a ticket-style sign-in. All of it respects `prefers-reduced-motion`.
 
 ### Admin usability & governance
 - **Control room** per event: go live and end the show, stage scene switcher, lower thirds, run-of-show editor, poll composer, bracket builder, talent-hunt builder with judging, Q&A moderation, chat tools, audience settings, engagement stats, issued certificates with revoke, the event audit trail, and CSV export.
@@ -148,7 +159,7 @@ src/
   db/                        Drizzle schema · client (auto-migrate) · demo seed
 drizzle/                     SQL migrations
 tests/                       Vitest
-public/covers/               Stage art (generated with Gemini)
+public/covers/ public/houses/   Stage and house art (generated with Gemini via the agy CLI)
 ```
 
 ---
