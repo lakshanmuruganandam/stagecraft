@@ -96,7 +96,7 @@ export async function seed(db: DB) {
       "How do you go from a weekend repo to a project thousands depend on? Our guest walks through triage, release engineering and burnout-proof maintainership — then takes your questions live. Upvote the questions you want answered.",
     kind: "talk",
     status: "live",
-    streamUrl: "https://www.youtube.com/watch?v=jfKfPfyJRdk",
+    streamUrl: "https://www.youtube.com/watch?v=YE7VzlLtp-4",
     hostHouseIds: [H.saranda],
     startsAt: now - 25 * min,
     endsAt: now + 65 * min,
