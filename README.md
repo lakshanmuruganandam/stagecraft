@@ -4,7 +4,20 @@
 
 **Live:** https://stagecraft-xi.vercel.app · **Repo:** https://github.com/lakshanmuruganandam/stagecraft
 
-![StageCraft stage](public/covers/hero.webp)
+[![Live demo](https://img.shields.io/badge/live%20demo-stagecraft--xi.vercel.app-ff9a1f?style=for-the-badge)](https://stagecraft-xi.vercel.app)
+[![CI](https://github.com/lakshanmuruganandam/stagecraft/actions/workflows/ci.yml/badge.svg)](https://github.com/lakshanmuruganandam/stagecraft/actions/workflows/ci.yml)
+![Lighthouse](https://img.shields.io/badge/Lighthouse-100%20a11y%20·%20100%20best%20practices%20·%20100%20SEO-0c9a5f)
+![Next.js 16](https://img.shields.io/badge/Next.js-16%20App%20Router-000)
+![License: MIT](https://img.shields.io/badge/license-MIT-blue)
+
+![StageCraft home: living forest sky, live 3D product scene](docs/screenshots/home.png)
+
+| | |
+|---|---|
+| ![Event room](docs/screenshots/event-room.png) | ![3D House Cup Arena](docs/screenshots/arena.png) |
+| **Event room**: stream, chat, Q&A, polls, reactions | **House Cup Arena**: WebGL, live standings |
+| ![Organizer monitor wall](docs/screenshots/monitor-wall.png) | ![Houses](docs/screenshots/houses.png) |
+| **Control room monitor wall** for organizers | **House Hub** for every house |
 
 Guest talks, esports cups, talent hunts and hackathon demo days for IITM BS houses run on a patchwork of YouTube links, Google Forms and WhatsApp. StageCraft replaces it with one place to watch, ask, vote, predict and react live. Organizers run the whole show from a single control room, and admins govern users, roles and the audit trail. When a show ends, every winner and participant gets a **cryptographically signed certificate**, and their house gets points.
 
