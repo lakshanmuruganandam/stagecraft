@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist_Mono, Instrument_Sans } from "next/font/google";
 import { Header } from "@/components/site/Header";
@@ -43,7 +44,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Toaster />
         <GlobalBroadcast />
         <GlowTracker />
-        <Spot />
+        <Suspense fallback={null}>
+          <Spot />
+        </Suspense>
       </body>
     </html>
   );
