@@ -8,6 +8,7 @@ import { heroScene, leaderboard, listEvents, listHouses, platformStats, recentAw
 import { CountUp } from "@/components/site/CountUp";
 import { HeroScene } from "@/components/home/HeroScene";
 import { ShowStory } from "@/components/home/ShowStory";
+import { ArenaLoader } from "@/components/three/ArenaLoader";
 
 export default function Home() {
   return (
@@ -21,6 +22,7 @@ export default function Home() {
           <EventSections />
         </Suspense>
         <ShowStory />
+        <ArenaSection />
         <Suspense fallback={<div className="h-64 animate-pulse rounded-3xl bg-white/3" />}>
           <HouseStrip />
         </Suspense>
@@ -105,6 +107,23 @@ async function EventSections() {
         </section>
       )}
     </>
+  );
+}
+
+function ArenaSection() {
+  return (
+    <section aria-labelledby="arena-h">
+      <SectionTitle
+        eyebrow="House cup · live in 3D"
+        title={<span id="arena-h">Twelve houses. One arena.</span>}
+        action={
+          <Link href="/houses" className={buttonClass("ghost", "sm")}>
+            Explore every house <ArrowRight size={14} />
+          </Link>
+        }
+      />
+      <ArenaLoader className="h-[520px]" />
+    </section>
   );
 }
 

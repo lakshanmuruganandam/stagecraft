@@ -2,16 +2,22 @@ import { isDemo } from "@/lib/env";
 import Link from "next/link";
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { ArrowRight, Award, CalendarPlus, Radio, ShieldCheck, Trophy, Users } from "lucide-react";
+import { Award, CalendarPlus, Radio, ShieldCheck, Trophy, Users } from "lucide-react";
 import { getViewer } from "@/lib/auth";
 import { certificatesFor, engagement, leaderboard, listAllEventsForAdmin, listHouses } from "@/server/queries";
 import { AdminSkeleton, Gate } from "@/components/admin/Gate";
 import { ResetDemo } from "@/components/admin/ResetDemo";
 import { BroadcastComposer } from "@/components/admin/BroadcastComposer";
-import { Badge, buttonClass, OnAir, SectionTitle } from "@/components/ui/primitives";
-import { fmtDate, fmtTime, KIND_LABEL } from "@/lib/format";
-import type { EventDTO, HouseDTO } from "@/lib/types";
+import { buttonClass } from "@/components/ui/primitives";
+import { MeterStat } from "@/components/admin/wall/MeterStat";
+import { MonitorTile } from "@/components/admin/wall/MonitorTile";
+import { SignalHeader } from "@/components/admin/wall/SignalHeader";
+import { WallStyles } from "@/components/admin/wall/WallStyles";
+import type { EventStatus } from "@/lib/types";
 import { securityStats } from "./_lib/users";
+
+/** Signal type for each entry of `groups`, in order. */
+const SIGNALS: EventStatus[] = ["live", "scheduled", "draft", "ended"];
 
 export const metadata: Metadata = { title: "Control room" };
 
@@ -54,6 +60,8 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
       : []),
   ];
 
+  const maxParticipants = Math.max(0, ...eng.map((x) => x.participants));
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -74,25 +82,10 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
 
       {reset && <p className="mb-6 rounded-xl border border-ok/30 bg-ok/10 px-4 py-3 text-sm text-success">Demo data was reset to a fresh state.</p>}
 
+      <WallStyles />
       <dl className={`mb-12 grid grid-cols-2 gap-3 ${stats.length > 4 ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
-        {stats.map(({ icon: Icon, label, value, note, href }) => (
-          <div key={label} className="card relative p-4 sm:p-5">
-            <dt className="flex items-center gap-2 text-xs text-ink-400">
-              <Icon size={14} className="text-spot-400" /> {label}
-            </dt>
-            <dd className="timecode mt-2 text-3xl font-semibold text-white">{value}</dd>
-            {note && (
-              <dd className="mt-1 text-[0.7rem] text-ink-400">
-                {href ? (
-                  <Link href={href} className="after:absolute after:inset-0 hover:text-white">
-                    {note}
-                  </Link>
-                ) : (
-                  note
-                )}
-              </dd>
-            )}
-          </div>
+        {stats.map(({ icon, label, value, note, href }, i) => (
+          <MeterStat key={label} icon={icon} label={label} value={value} note={note} href={href} hot={i === 0 && Number(value) > 0} order={i} />
         ))}
       </dl>
 
@@ -103,13 +96,22 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
       )}
 
       <div id="events" className="scroll-mt-28 space-y-10">
-        {groups.map((g) =>
+        {groups.map((g, gi) =>
           g.items.length ? (
-            <section key={g.title}>
-              <SectionTitle eyebrow={`${g.eyebrow} · ${g.items.length}`} title={g.title} />
-              <ul className="card divide-y divide-white/6">
-                {g.items.map((e) => (
-                  <EventRow key={e.id} event={e} houses={houses} participants={eng[events.indexOf(e)].participants} certs={certs[events.indexOf(e)].length} />
+            <section key={g.title} aria-labelledby={`wall-${SIGNALS[gi]}`}>
+              <SignalHeader id={`wall-${SIGNALS[gi]}`} status={SIGNALS[gi]} count={g.items.length} />
+              <ul className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {g.items.map((e, i) => (
+                  <MonitorTile
+                    key={e.id}
+                    event={e}
+                    houses={houses}
+                    participants={eng[events.indexOf(e)].participants}
+                    certs={certs[events.indexOf(e)].length}
+                    maxParticipants={maxParticipants}
+                    channel={events.indexOf(e) + 1}
+                    order={i}
+                  />
                 ))}
               </ul>
             </section>
@@ -123,34 +125,5 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
         )}
       </div>
     </div>
-  );
-}
-
-function EventRow({ event: e, houses, participants, certs }: { event: EventDTO; houses: HouseDTO[]; participants: number; certs: number }) {
-  return (
-    <li className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-5 sm:p-5">
-      <span aria-hidden className="hidden h-12 w-1.5 shrink-0 rounded-full sm:block" style={{ background: `hsl(${e.hue} 80% 55%)` }} />
-      <div className="min-w-0 flex-1">
-        <div className="mb-1 flex flex-wrap items-center gap-2">
-          {e.status === "live" ? <OnAir /> : <Badge tone={e.status === "draft" ? "muted" : e.status === "ended" ? "neutral" : "spot"}>{e.status}</Badge>}
-          <Badge>{KIND_LABEL[e.kind]}</Badge>
-        </div>
-        <p className="truncate font-display text-lg font-semibold text-white">{e.title}</p>
-        <p className="timecode text-xs text-ink-400">
-          {fmtDate(e.startsAt)} · {fmtTime(e.startsAt)} IST · {e.hostHouseIds.map((h) => houses.find((x) => x.id === h)?.name).filter(Boolean).join(" × ")}
-        </p>
-      </div>
-      <div className="flex items-center gap-5 text-xs text-ink-400">
-        <span>
-          <span className="timecode block text-base text-white">{participants}</span>took part
-        </span>
-        <span>
-          <span className="timecode block text-base text-white">{certs}</span>certificates
-        </span>
-      </div>
-      <Link href={`/admin/events/${e.id}`} className={buttonClass(e.status === "live" ? "primary" : "outline", "sm")}>
-        Open control room <ArrowRight size={14} />
-      </Link>
-    </li>
   );
 }

@@ -14,7 +14,7 @@ import { ThemeToggle } from "./ThemeToggle";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/8 bg-ink-950/70 backdrop-blur-xl backdrop-saturate-150">
+    <header className="sticky top-0 z-40 border-b border-white/8 bg-ink-950/85 backdrop-blur-md">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-full focus:bg-spot-500 focus:px-4 focus:py-2 focus:text-on-spot">
         Skip to content
       </a>

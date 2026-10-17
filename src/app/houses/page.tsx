@@ -7,6 +7,7 @@ import { houseArt } from "@/components/hub/art";
 import { EnergyRibbon } from "@/components/hub/EnergyRibbon";
 import { HouseCard } from "@/components/hub/HouseCard";
 import { buttonClass } from "@/components/ui/primitives";
+import { ArenaLoader } from "@/components/three/ArenaLoader";
 
 export const metadata: Metadata = {
   title: "Houses",
@@ -26,6 +27,9 @@ export default function HousesPage() {
           <CalendarDays size={16} /> Event radar
         </Link>
       </div>
+      <section aria-label="House cup arena" className="mt-10 animate-rise [animation-delay:200ms]">
+        <ArenaLoader className="h-[min(70vh,640px)] min-h-[420px]" />
+      </section>
       <Suspense fallback={<div className="mt-10 h-[40rem] animate-pulse rounded-3xl bg-white/4" />}>
         <Standings />
       </Suspense>

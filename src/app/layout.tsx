@@ -7,6 +7,7 @@ import { GlobalBroadcast } from "@/components/site/GlobalBroadcast";
 import { GlowTracker } from "@/components/site/GlowTracker";
 import { Scenery } from "@/components/site/Scenery";
 import { Spot } from "@/components/motion/Spot";
+import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { themeScript } from "@/components/site/ThemeToggle";
 import { siteUrl } from "@/lib/env";
 import "./globals.css";
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <GlowTracker />
         <Suspense fallback={null}>
           <Spot />
+          <SmoothScroll />
         </Suspense>
       </body>
     </html>
