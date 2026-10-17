@@ -4,7 +4,8 @@ import { Header } from "@/components/site/Header";
 import { Toaster } from "@/components/site/Toaster";
 import { GlobalBroadcast } from "@/components/site/GlobalBroadcast";
 import { GlowTracker } from "@/components/site/GlowTracker";
-import { AmbientBackground } from "@/components/site/AmbientBackground";
+import { Scenery } from "@/components/site/Scenery";
+import { Spot } from "@/components/motion/Spot";
 import { themeScript } from "@/components/site/ThemeToggle";
 import { siteUrl } from "@/lib/env";
 import "./globals.css";
@@ -30,7 +31,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="flex min-h-full flex-col">
-        <AmbientBackground />
+        <Scenery />
+        <div aria-hidden className="scroll-beam" />
         <Header />
         <main id="main" className="flex-1">
           {children}
@@ -41,6 +43,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Toaster />
         <GlobalBroadcast />
         <GlowTracker />
+        <Spot />
       </body>
     </html>
   );

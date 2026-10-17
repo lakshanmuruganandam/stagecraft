@@ -23,7 +23,10 @@ export function GlobalBroadcast() {
     const es = new EventSource("/api/live?scope=global");
     es.onmessage = (msg) => {
       const ev = JSON.parse(msg.data) as { type: string; payload: Record<string, unknown> };
-      if (ev.type === "broadcast") setCast(ev.payload as unknown as Cast);
+      if (ev.type === "broadcast") {
+        setCast(ev.payload as unknown as Cast);
+        dispatchEvent(new Event("sc:gust"));
+      }
       else if (personal && ev.type === "cert.issued") toast(`🎓 Your certificate is ready: ${ev.payload.achievement}`, { tone: "ok", href: `/c/${ev.payload.id}?claim=1`, cta: "Claim" });
       else if (personal && ev.type === "toast") toast(String(ev.payload.message));
     };

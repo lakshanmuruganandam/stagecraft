@@ -90,7 +90,7 @@
   --danger-bg: #fdecec;
   --success: #0b7a4c;
   --success-bg: #e7f7ef;
-  --card-bg: rgb(255 255 255 / 0.78);
+  --card-bg: rgb(255 253 249 / 0.9);
   --card-border: rgb(60 40 15 / 0.09);
   --card-shadow: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 12px 32px -18px rgb(80 50 10 / 0.25);
   --glow: rgb(255 154 31 / 0.16);
@@ -135,7 +135,8 @@ html {
 }
 
 body {
-  background: var(--ink-950);
+  /* Transparent so the fixed scenery (z -10) shows; html carries the paper. */
+  background: transparent;
   color: var(--ink-100);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -166,7 +167,6 @@ body::before {
   border: 1px solid var(--card-border);
   border-radius: var(--radius-card);
   box-shadow: var(--card-shadow);
-  backdrop-filter: blur(14px);
 }
 
 @utility timecode {
@@ -263,3 +263,148 @@ body:has(.stage-root.transparent) {
   12% { opacity: 1; transform: translateY(-30px) scale(1.1); }
   100% { opacity: 0; transform: translateY(-320px) translateX(var(--drift, 0px)) scale(.9); }
 }
+
+/* ───────────── Living Forest Sky (components/site/Scenery.tsx) ───────────── */
+@property --sky-a { syntax: "<color>"; inherits: true; initial-value: #9fd2ff; }
+@property --sky-b { syntax: "<color>"; inherits: true; initial-value: #d6ecff; }
+@property --sky-c { syntax: "<color>"; inherits: true; initial-value: #fff4e2; }
+@property --ridge-1 { syntax: "<color>"; inherits: true; initial-value: #b9d3e6; }
+@property --ridge-2 { syntax: "<color>"; inherits: true; initial-value: #a3c4d6; }
+@property --ridge-3 { syntax: "<color>"; inherits: true; initial-value: #8fb3a8; }
+@property --hill-1 { syntax: "<color>"; inherits: true; initial-value: #7fae7a; }
+@property --hill-2 { syntax: "<color>"; inherits: true; initial-value: #5f9a5c; }
+@property --tree-1 { syntax: "<color>"; inherits: true; initial-value: #5a8c57; }
+@property --tree-2 { syntax: "<color>"; inherits: true; initial-value: #3f7a45; }
+@property --sun-core { syntax: "<color>"; inherits: true; initial-value: #fff6cf; }
+@property --sun-glow { syntax: "<color>"; inherits: true; initial-value: #ffd36e; }
+
+.scenery {
+  --mist: rgb(255 255 255 / 0.55);
+  --cloud: #ffffff;
+  --cloud-shade: rgb(190 210 235 / 0.6);
+  --pole: rgb(60 50 40 / 0.55);
+  --rays: rgb(255 236 180 / 0.22);
+  transition: --sky-a 2.5s, --sky-b 2.5s, --sky-c 2.5s, --ridge-1 2.5s, --ridge-2 2.5s, --ridge-3 2.5s, --hill-1 2.5s, --hill-2 2.5s, --tree-1 2.5s, --tree-2 2.5s, --sun-core 2.5s, --sun-glow 2.5s;
+}
+.scenery[data-phase="dawn"] {
+  --sky-a: #f7b9a5; --sky-b: #ffd8c2; --sky-c: #fff1e0;
+  --ridge-1: #d9c3cf; --ridge-2: #c7b3c6; --ridge-3: #a8a9b3;
+  --hill-1: #8ea98a; --hill-2: #6f946d; --tree-1: #64875f; --tree-2: #4a7350;
+  --sun-core: #fff1d6; --sun-glow: #ffb38a; --cloud-shade: rgb(255 190 175 / 0.55); --rays: rgb(255 200 170 / 0.22);
+}
+.scenery[data-phase="day"] {
+  --sky-a: #8ccbff; --sky-b: #cfe8ff; --sky-c: #fff4e2;
+  --ridge-1: #b9d3e6; --ridge-2: #a3c4d6; --ridge-3: #8fb3a8;
+  --hill-1: #7fae7a; --hill-2: #5f9a5c; --tree-1: #5a8c57; --tree-2: #3f7a45;
+  --sun-core: #fffbe8; --sun-glow: #ffe08a;
+}
+.scenery[data-phase="golden"] {
+  --sky-a: #ffb27a; --sky-b: #ffd6a3; --sky-c: #fff0d8;
+  --ridge-1: #e6c3a3; --ridge-2: #d6ad8f; --ridge-3: #b99a78;
+  --hill-1: #a8a35f; --hill-2: #8a8a46; --tree-1: #7b7a3f; --tree-2: #5f6532;
+  --sun-core: #fff3c8; --sun-glow: #ff9a3c; --cloud: #fff4e6; --cloud-shade: rgb(255 170 120 / 0.55); --rays: rgb(255 190 120 / 0.28);
+}
+.scenery[data-phase="dusk"] {
+  --sky-a: #a9a4ec; --sky-b: #e3c1e4; --sky-c: #ffe2d2;
+  --ridge-1: #c4b2d9; --ridge-2: #ae9fca; --ridge-3: #8f8bb0;
+  --hill-1: #74888a; --hill-2: #5a7273; --tree-1: #556d6c; --tree-2: #3f5958;
+  --sun-core: #fff0e0; --sun-glow: #ff9ab0; --cloud: #fbeefb; --cloud-shade: rgb(200 170 220 / 0.6); --mist: rgb(255 240 250 / 0.5); --rays: rgb(255 190 210 / 0.18);
+}
+.scenery[data-phase="night"] {
+  --sky-a: #0d1338; --sky-b: #1d2356; --sky-c: #3b2f5c;
+  --ridge-1: #262c5a; --ridge-2: #20264d; --ridge-3: #1b2142;
+  --hill-1: #172238; --hill-2: #111a2c; --tree-1: #13203a; --tree-2: #0c1526;
+  --sun-core: #f6f3ff; --sun-glow: #b9b8ff; --cloud: #2b3166; --cloud-shade: rgb(20 24 60 / 0.6); --mist: rgb(120 130 200 / 0.15); --pole: rgb(220 220 255 / 0.4); --rays: rgb(180 180 255 / 0.08);
+}
+
+.scenery-sky { background: linear-gradient(180deg, var(--sky-a) 0%, var(--sky-b) 42%, var(--sky-c) 78%); }
+.scenery-sun {
+  width: clamp(70px, 9vw, 130px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--sun-core) 0 52%, color-mix(in oklab, var(--sun-glow) 70%, transparent) 64%, transparent 72%);
+  box-shadow: 0 0 120px 40px color-mix(in oklab, var(--sun-glow) 45%, transparent);
+  animation: sunpulse 6s ease-in-out infinite;
+}
+.scenery[data-phase="night"] .scenery-sun { box-shadow: 0 0 80px 20px rgb(185 184 255 / 0.25); }
+.scenery-rays {
+  background: repeating-conic-gradient(from 0deg, var(--rays) 0deg 4deg, transparent 4deg 13deg);
+  mask-image: radial-gradient(circle, black 0%, transparent 45%);
+  rotate: calc(var(--mx, 0) * 24deg);
+  animation: raysturn 240s linear infinite;
+}
+.scenery-stars {
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 28% 8%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 46% 22%, #fff, transparent), radial-gradient(1px 1px at 63% 12%, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 78% 26%, #fff, transparent), radial-gradient(1px 1px at 88% 9%, #fff, transparent),
+    radial-gradient(1.3px 1.3px at 35% 34%, #fff, transparent), radial-gradient(1px 1px at 70% 38%, #fff, transparent),
+    radial-gradient(1px 1px at 5% 40%, #fff, transparent), radial-gradient(1.4px 1.4px at 94% 42%, #fff, transparent);
+  animation: twinkle 5s ease-in-out infinite alternate;
+}
+.scenery-cloud { left: -320px; animation: clouddrift linear infinite; will-change: translate; }
+.scenery-flag { transform-box: fill-box; transform-origin: left center; animation: flagwave 2.2s ease-in-out infinite; }
+.scenery-mist { animation: mistdrift 28s ease-in-out infinite alternate; }
+.scenery-mist-2 { animation-duration: 36s; animation-direction: alternate-reverse; }
+
+@keyframes sunpulse { 50% { scale: 1.04; } }
+@keyframes raysturn { to { transform: rotate(360deg); } }
+@keyframes twinkle { from { opacity: 0.55; } to { opacity: 1; } }
+@keyframes clouddrift { from { translate: 0 0; } to { translate: calc(100vw + 640px) 0; } }
+@keyframes flagwave { 0%, 100% { transform: skewY(0deg) scaleX(1); } 50% { transform: skewY(-8deg) scaleX(0.86); } }
+@keyframes mistdrift { from { translate: -60px 0; } to { translate: 80px 0; } }
+
+/* ───────────── Scroll motion: pure CSS scroll-driven animations ─────────────
+ * [data-reveal]          rises out of a soft blur as it enters the viewport
+ * [data-reveal="scale"]  grows in instead
+ * [data-reveal-stagger]  its children cascade in, each slightly later
+ * No JavaScript, so no hydration risk; unsupported browsers just show content. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal],
+    [data-reveal-stagger] > * {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+    [data-reveal="scale"],
+    [data-reveal-stagger="scale"] > * { animation-name: reveal-scale; }
+    [data-reveal-stagger] > :nth-child(3n + 2) { animation-range: entry 8% entry 78%; }
+    [data-reveal-stagger] > :nth-child(3n + 3) { animation-range: entry 16% entry 86%; }
+  }
+}
+@keyframes reveal-in { from { opacity: 0; transform: translateY(40px) scale(0.98); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes reveal-scale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
+
+/* Spotlight progress beam + hero exit, driven by the scroll position itself. */
+.scroll-beam { display: none; }
+@supports (animation-timeline: scroll()) {
+  .scroll-beam {
+    display: block;
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 3px;
+    z-index: 60;
+    transform-origin: left;
+    background: linear-gradient(90deg, #ffd36e, var(--spot-500), #ff6b6b);
+    box-shadow: 0 0 18px var(--spot-500);
+    animation: beam-grow linear both;
+    animation-timeline: scroll(root);
+  }
+  @keyframes beam-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-exit {
+      animation: hero-exit linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 75vh;
+    }
+    @keyframes hero-exit { to { opacity: 0.15; transform: translateY(-80px) scale(0.96); filter: blur(4px); } }
+    .fly { animation: fly linear both; animation-timeline: scroll(root); animation-range: 0 90vh; }
+    @keyframes fly { to { translate: var(--fx, 0) var(--fy, -160px); rotate: var(--fr, 0deg); opacity: 0; } }
+  }
+}
+@keyframes stamp { from { opacity: 0; transform: scale(2.4) rotate(-18deg); } to { opacity: 1; transform: none; } }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
+.spot-blink { transform-box: fill-box; transform-origin: center; animation: blink 5s infinite; }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }

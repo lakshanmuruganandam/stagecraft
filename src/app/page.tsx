@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { connection } from "next/server";
@@ -8,6 +7,7 @@ import { buttonClass, SectionTitle } from "@/components/ui/primitives";
 import { heroScene, leaderboard, listEvents, listHouses, platformStats, recentAwards } from "@/server/queries";
 import { CountUp } from "@/components/site/CountUp";
 import { HeroScene } from "@/components/home/HeroScene";
+import { ShowStory } from "@/components/home/ShowStory";
 
 export default function Home() {
   return (
@@ -20,6 +20,7 @@ export default function Home() {
         <Suspense fallback={<GridSkeleton />}>
           <EventSections />
         </Suspense>
+        <ShowStory />
         <Suspense fallback={<div className="h-64 animate-pulse rounded-3xl bg-white/3" />}>
           <HouseStrip />
         </Suspense>
@@ -34,7 +35,9 @@ function Hero() {
     <section className="relative overflow-hidden">
       <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[560px] w-[900px] -translate-x-1/2 bg-[radial-gradient(closest-side,rgb(255_169_40/0.18),transparent)]" />
       <div aria-hidden className="pointer-events-none absolute left-[38%] top-0 h-[640px] w-[640px] origin-top animate-[sway_14s_ease-in-out_infinite] bg-[conic-gradient(from_180deg_at_50%_0%,transparent_155deg,rgb(255_210_138/0.13)_180deg,transparent_205deg)] motion-reduce:animate-none" />
-      <div className="relative mx-auto max-w-7xl px-4 pb-14 pt-16 sm:px-6 sm:pt-24">
+      {/* Paper glow: keeps hero copy crisp over the living scenery */}
+      <div aria-hidden className="pointer-events-none absolute -left-[10%] top-0 h-full w-[75%] bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--ink-950)_86%,transparent),color-mix(in_oklab,var(--ink-950)_45%,transparent)_60%,transparent)]" />
+      <div className="hero-exit relative mx-auto max-w-7xl px-4 pb-14 pt-16 sm:px-6 sm:pt-24">
         <p className="eyebrow animate-rise">Live events · IITM BS houses</p>
         <h1 className="mt-4 max-w-4xl animate-rise font-display text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.03em] text-white [animation-delay:80ms] sm:text-7xl">
           The audience is <span className="relative whitespace-nowrap text-spot-400">part of the show<svg aria-hidden viewBox="0 0 300 12" className="absolute -bottom-2 left-0 w-full"><path d="M2 9c60-6 160-8 296-3" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" opacity=".6" /></svg></span>.
@@ -72,7 +75,7 @@ async function EventSections() {
       <section id="live" className="scroll-mt-24">
         <SectionTitle eyebrow={`${live.length} on air`} title="Live now" />
         {live.length ? (
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div data-reveal-stagger className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {live.map((e) => (
               <EventCard key={e.id} event={e} houses={houses} size="lg" />
             ))}
@@ -84,7 +87,7 @@ async function EventSections() {
       {upcoming.length > 0 && (
         <section>
           <SectionTitle eyebrow="Coming up" title="On the schedule" />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div data-reveal-stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {upcoming.map((e) => (
               <EventCard key={e.id} event={e} houses={houses} />
             ))}
@@ -94,7 +97,7 @@ async function EventSections() {
       {past.length > 0 && (
         <section>
           <SectionTitle eyebrow="Recaps & results" title="Past events" />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div data-reveal-stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {past.map((e) => (
               <EventCard key={e.id} event={e} houses={houses} />
             ))}
@@ -120,7 +123,7 @@ async function HouseStrip() {
           </Link>
         }
       />
-      <ol className="card grid gap-x-8 gap-y-3 p-5 sm:grid-cols-2 sm:p-6">
+      <ol data-reveal className="card grid gap-x-8 gap-y-3 p-5 sm:grid-cols-2 sm:p-6">
         {rows.slice(0, 8).map((r, i) => (
           <li key={r.id} className="grid grid-cols-[1.5rem_6.5rem_1fr_3.5rem] items-center gap-3 text-sm">
             <span className="timecode text-ink-400">{String(i + 1).padStart(2, "0")}</span>
@@ -148,7 +151,7 @@ function Features() {
   return (
     <section>
       <SectionTitle eyebrow="Why StageCraft" title="Everything around the stream" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div data-reveal-stagger="scale" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map(({ icon: Icon, title, body }) => (
           <div key={title} className="card p-5">
             <Icon className="text-spot-400" size={22} />
@@ -181,7 +184,7 @@ async function HeroStats() {
     { label: "members", value: st.members },
   ];
   return (
-    <dl className="mt-12 grid max-w-2xl animate-rise grid-cols-2 gap-x-8 gap-y-4 [animation-delay:320ms] sm:grid-cols-4">
+    <dl className="card mt-12 grid max-w-[600px] animate-rise grid-cols-2 gap-x-8 gap-y-4 px-6 py-5 [animation-delay:320ms] sm:grid-cols-4">
       {items.map((i) => (
         <div key={i.label}>
           <dd className="font-display text-3xl font-semibold text-white">

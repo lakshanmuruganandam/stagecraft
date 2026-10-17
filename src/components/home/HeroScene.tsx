@@ -59,7 +59,7 @@ export function HeroScene({ scene }: { scene: Scene }) {
         {/* Q&A card */}
         {question && (
           <Layer z={140} className="left-[4%] top-[14%] w-[48%] animate-[rise_.9s_.25s_both]">
-            <Link href={`/e/${question.slug}`} className="pointer-events-auto flex gap-3 rounded-2xl border border-white/10 bg-ink-850/90 p-4 shadow-[0_24px_60px_-24px_rgb(60_35_5/0.45)] backdrop-blur-xl">
+            <Link href={`/e/${question.slug}`} className="pointer-events-auto flex gap-3 rounded-2xl border border-white/10 bg-ink-850/96 p-4 shadow-[0_24px_60px_-24px_rgb(60_35_5/0.45)]">
               <span className="flex w-11 shrink-0 flex-col items-center justify-center rounded-xl border border-spot-500/40 bg-spot-500/12 py-1 text-spot-300">
                 <ChevronUp size={16} />
                 <span className="timecode text-sm font-semibold">{question.votes}</span>
@@ -75,7 +75,7 @@ export function HeroScene({ scene }: { scene: Scene }) {
         {/* Live poll, the centrepiece */}
         {poll?.poll.tallies && (
           <Layer z={70} className="left-[22%] top-[34%] w-[54%] animate-[rise_.9s_.1s_both]">
-            <Link href={`/e/${poll.event.slug}`} className="pointer-events-auto block rounded-3xl border border-white/10 bg-ink-850/92 p-5 shadow-[0_40px_90px_-30px_rgb(60_35_5/0.5)] backdrop-blur-xl">
+            <Link href={`/e/${poll.event.slug}`} className="pointer-events-auto block rounded-3xl border border-white/10 bg-ink-850/97 p-5 shadow-[0_40px_90px_-30px_rgb(60_35_5/0.5)]">
               <div className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-onair/12 px-2.5 py-0.5 font-mono text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-onair ring-1 ring-onair/30">
                   <span className="size-1.5 animate-tally rounded-full bg-onair" /> Live poll
@@ -105,7 +105,7 @@ export function HeroScene({ scene }: { scene: Scene }) {
         {/* Live match */}
         {match && (
           <Layer z={20} className="bottom-[3%] left-[-2%] w-[38%] animate-[rise_.9s_.4s_both]">
-            <Link href={`/e/${match.slug}`} className="pointer-events-auto block rounded-2xl border border-white/10 bg-ink-850/90 p-4 shadow-[0_24px_60px_-24px_rgb(60_35_5/0.45)] backdrop-blur-xl">
+            <Link href={`/e/${match.slug}`} className="pointer-events-auto block rounded-2xl border border-white/10 bg-ink-850/96 p-4 shadow-[0_24px_60px_-24px_rgb(60_35_5/0.45)]">
               <p className="eyebrow flex items-center gap-1.5 text-[0.6rem]">
                 <Swords size={11} /> {match.game ?? "Match"} · <span className="text-onair">live</span>
               </p>
@@ -136,7 +136,7 @@ export function HeroScene({ scene }: { scene: Scene }) {
 
         {/* On-air chip */}
         <Layer z={180} className="bottom-[22%] right-[6%] animate-[rise_.9s_.7s_both]">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-ink-850/90 px-3.5 py-2 text-xs font-medium text-ink-100 shadow-lg backdrop-blur">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-ink-850/96 px-3.5 py-2 text-xs font-medium text-ink-100 shadow-lg">
             <Radio size={13} className="text-onair" /> 3 shows on air
           </span>
         </Layer>
@@ -154,11 +154,17 @@ export function HeroScene({ scene }: { scene: Scene }) {
   );
 }
 
+/** Each layer drifts by depth and flies off in its own direction on scroll (.fly). */
 function Layer({ z, className, children }: { z: number; className: string; children: React.ReactNode }) {
+  const fx = `${Math.round(((z * 37) % 120) - 60)}px`;
+  const fy = `${-120 - z}px`;
+  const fr = `${((z * 13) % 16) - 8}deg`;
   return (
     <div className={`absolute [transform-style:preserve-3d] ${className}`} style={{ transform: `translateZ(${z}px)` }}>
+      <div className="fly" style={{ ["--fx" as string]: fx, ["--fy" as string]: fy, ["--fr" as string]: fr }}>
       <div className="animate-[floaty_7s_ease-in-out_infinite] motion-reduce:animate-none" style={{ animationDelay: `${-z / 30}s` }}>
         {children}
+      </div>
       </div>
     </div>
   );
