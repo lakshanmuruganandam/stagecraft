@@ -107,7 +107,9 @@ async function globalStream(req: NextRequest) {
   const viewer = await getViewer();
   const channels: Channel[] = [globalChannel];
   if (viewer) channels.push(userChannel(viewer.id));
-  let cursor = await latestSeq();
+  // Resume after a reconnect so no broadcast is lost in the gap.
+  const resume = req.headers.get("last-event-id");
+  let cursor = resume && /^\d+$/.test(resume) ? Number(resume) : await latestSeq();
   const signal = req.signal;
   const encoder = new TextEncoder();
   const lifetime = process.env.VERCEL ? 50_000 : 10 * 60_000;

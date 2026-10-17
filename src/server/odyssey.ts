@@ -67,16 +67,18 @@ export type MemberRank = { id: string; name: string; houseId: string | null; xp:
 export async function xpLeaderboard(limit = 10, houseId?: string): Promise<MemberRank[]> {
   const db = await getDb();
   const [rows, users] = await Promise.all([activityRows(), db.select({ id: s.users.id, name: s.users.name, houseId: s.users.houseId, suspendedAt: s.users.suspendedAt }).from(s.users)]);
+  const byId = new Map(users.map((u) => [u.id, u]));
   return rows
-    .map((r) => {
-      const u = users.find((x) => x.id === r.user_id)!;
+    .flatMap((r) => {
+      const u = byId.get(r.user_id);
+      // Filter before scoring: suspended members and other houses never rank.
+      if (!u || u.suspendedAt || (houseId && u.houseId !== houseId)) return [];
       const o = summarize(toActivity(r));
-      return { id: u.id, name: u.name, houseId: u.houseId, suspended: !!u.suspendedAt, xp: o.xp, level: o.level.level, title: o.level.title, badges: o.earned };
+      return [{ id: u.id, name: u.name, houseId: u.houseId, xp: o.xp, level: o.level.level, title: o.level.title, badges: o.earned }];
     })
-    .filter((m) => !m.suspended && m.xp > 0 && (!houseId || m.houseId === houseId))
+    .filter((m) => m.xp > 0)
     .sort((a, b) => b.xp - a.xp)
-    .slice(0, limit)
-    .map((m) => ({ id: m.id, name: m.name, houseId: m.houseId, xp: m.xp, level: m.level, title: m.title, badges: m.badges }));
+    .slice(0, limit);
 }
 
 export type Contribution = { eventId: string; slug: string; title: string; kind: s.EventKind; startsAt: number; actions: number };

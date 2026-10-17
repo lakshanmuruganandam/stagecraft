@@ -9,11 +9,12 @@ import { toast } from "@/components/site/Toaster";
 import { ConfirmButton } from "../ConfirmButton";
 import { fmtDate, fmtTime, KIND_LABEL } from "@/lib/format";
 
-export function TopBar() {
+export function TopBar({ stageKey }: { stageKey: string }) {
   const { state, run } = useLive();
   const router = useRouter();
   const e = state.event;
-  const obsPath = `/e/${e.slug}/stage?transparent=1`;
+  // The OBS link carries the signed stage key so that screen can show check-in QR codes.
+  const obsPath = `/e/${e.slug}/stage?transparent=1&key=${stageKey}`;
 
   async function wrapUp() {
     const r = await run<{ certificates: number; points: number }>("event.wrapup");

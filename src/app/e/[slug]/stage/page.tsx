@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getEventRow, getSnapshot } from "@/server/queries";
+import { canManageEvent, getViewer } from "@/lib/auth";
+import { stageKey, verifyStageKey } from "@/lib/checkin";
 import { LiveProvider } from "@/components/live/LiveProvider";
 import { StageView } from "./StageView";
 
@@ -26,9 +28,14 @@ async function Loader({ params, searchParams }: Pick<PageProps<"/e/[slug]/stage"
   // Stage output is the public view, even when an organizer opens it.
   const snap = await getSnapshot(row.id, null);
   if (!snap) notFound();
+  // Only an organizer, or a screen holding the signed stage key, shows check-in QR codes.
+  const key = typeof sp.key === "string" ? sp.key : null;
+  const viewer = await getViewer();
+  const canShowCheckin = verifyStageKey(row.id, key) || canManageEvent(viewer, row);
+  const keyForScreen = canShowCheckin ? stageKey(row.id) : null;
   return (
     <LiveProvider snapshot={snap}>
-      <StageView transparent={sp.transparent === "1"} />
+      <StageView transparent={sp.transparent === "1"} stageKey={keyForScreen} />
     </LiveProvider>
   );
 }

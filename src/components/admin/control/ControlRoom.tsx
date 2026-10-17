@@ -13,10 +13,10 @@ import { Panel } from "./Panel";
  * narrow screens in the order an organizer needs it: workspace first.
  * `insights` is a server-rendered slot (engagement, certificates, audit).
  */
-export function ControlRoom({ insights }: { insights: ReactNode }) {
+export function ControlRoom({ insights, stageKey }: { insights: ReactNode; stageKey: string }) {
   return (
     <div className="pb-16">
-      <TopBar />
+      <TopBar stageKey={stageKey} />
       <div className="mx-auto grid max-w-[1600px] gap-4 px-4 pt-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] 2xl:grid-cols-[400px_minmax(0,1fr)_380px]">
         <div className="order-2 space-y-4 lg:order-1">
           <StageDesk />

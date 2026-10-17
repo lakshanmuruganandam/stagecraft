@@ -4,6 +4,7 @@ import { canManageEvent, getViewer } from "@/lib/auth";
 import { getEventRow, getSnapshot } from "@/server/queries";
 import { LiveProvider } from "@/components/live/LiveProvider";
 import { ControlRoom } from "@/components/admin/control/ControlRoom";
+import { stageKey } from "@/lib/checkin";
 import { Insights, InsightsSkeleton } from "@/components/admin/control/Insights";
 import { AdminSkeleton, Gate } from "@/components/admin/Gate";
 
@@ -29,6 +30,7 @@ async function Room({ params }: { params: PageProps<"/admin/events/[id]">["param
   return (
     <LiveProvider snapshot={snap}>
       <ControlRoom
+        stageKey={stageKey(row.id)}
         insights={
           <Suspense fallback={<InsightsSkeleton />}>
             <Insights eventId={row.id} />

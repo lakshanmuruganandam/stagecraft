@@ -272,7 +272,9 @@ export async function heroScene() {
       return { name: r?.name ?? "TBD", color: r?.color ?? "#999" };
     });
   }
+  const [{ live }] = await db.select({ live: sql<number>`count(*)` }).from(s.events).where(eq(s.events.status, "live"));
   return {
+    live: Number(live),
     poll,
     question: question ?? null,
     match: match && teams.length === 2 ? { slug: match.slug, game: match.game, teams, scoreA: match.m.scoreA ?? 0, scoreB: match.m.scoreB ?? 0 } : null,

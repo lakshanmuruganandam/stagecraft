@@ -58,7 +58,7 @@ async function UserMenu() {
   const demo = isDemo();
   return (
     <details className="group relative">
-      <summary className={`${buttonClass(v ? "subtle" : "primary", "sm")} cursor-pointer list-none [&::-webkit-details-marker]:hidden`}>
+      <summary className={`${buttonClass(v ? "subtle" : "primary", "sm")} cursor-pointer list-none whitespace-nowrap [&::-webkit-details-marker]:hidden`}>
         {v ? (
           <>
             <Avatar name={v.name} color={v.house?.color} size={22} />

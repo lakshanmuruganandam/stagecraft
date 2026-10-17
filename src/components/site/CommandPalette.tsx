@@ -44,8 +44,13 @@ export function CommandPalette() {
     };
   }, []);
 
+  const returnFocus = useRef<Element | null>(null);
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      if (returnFocus.current instanceof HTMLElement) returnFocus.current.focus();
+      return;
+    }
+    returnFocus.current = document.activeElement;
     setTimeout(() => input.current?.focus(), 10);
     if (events.length) return;
     fetch("/api/events")
@@ -90,7 +95,7 @@ export function CommandPalette() {
   return (
     <div className="fixed inset-0 z-[75] grid place-items-start bg-ink-950/70 px-4 pt-[14vh] backdrop-blur-sm" onMouseDown={() => setOpen(false)}>
       <div role="dialog" aria-modal="true" aria-label="Command palette" onMouseDown={(e) => e.stopPropagation()} className="mx-auto w-full max-w-xl animate-[castin_.25s_cubic-bezier(.2,.8,.2,1)_both] overflow-hidden rounded-2xl border border-white/10 bg-ink-850/95 shadow-2xl">
-        <div className="flex items-center gap-3 border-b border-white/8 px-4">
+        <div className="flex items-center gap-3 border-b border-white/8 px-4" onKeyDown={(e) => e.key === "Tab" && e.preventDefault()}>
           <Search size={17} className="text-ink-400" />
           <input
             ref={input}
@@ -107,7 +112,7 @@ export function CommandPalette() {
             role="combobox"
             aria-expanded="true"
             aria-controls="palette-list"
-            aria-activedescendant={results[safeActive] ? `pal-${results[safeActive].id}` : undefined}
+            aria-activedescendant={results[safeActive] ? `pal-opt-${safeActive}` : undefined}
             placeholder="Jump to an event, house or page…"
             className="h-14 flex-1 bg-transparent text-[0.95rem] text-white outline-none placeholder:text-ink-500"
           />
@@ -116,8 +121,8 @@ export function CommandPalette() {
         <ul id="palette-list" role="listbox" className="scrollbar-thin max-h-[52vh] overflow-y-auto p-2">
           {results.length === 0 && <li className="px-3 py-6 text-center text-sm text-ink-400">No matches.</li>}
           {results.map((it, i) => (
-            <li key={`${it.group}-${it.id}`} id={`pal-${it.id}`} role="option" aria-selected={i === safeActive}>
-              <button onMouseEnter={() => setActive(i)} onClick={() => go(it)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${i === safeActive ? "bg-white/8" : ""}`}>
+            <li key={`${it.group}-${it.id}`} id={`pal-opt-${i}`} role="option" aria-selected={i === safeActive} onMouseEnter={() => setActive(i)} onClick={() => go(it)} className="cursor-pointer">
+              <div className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${i === safeActive ? "bg-white/8" : ""}`}>
                 <span className={`grid size-8 place-items-center rounded-lg ${i === safeActive ? "bg-spot-500/20 text-spot-300" : "bg-white/5 text-ink-300"}`}>
                   <it.icon size={15} />
                 </span>
@@ -126,7 +131,7 @@ export function CommandPalette() {
                   <span className="block truncate text-xs text-ink-400">{it.hint}</span>
                 </span>
                 <span className="eyebrow text-[0.6rem]">{it.group}</span>
-              </button>
+              </div>
             </li>
           ))}
         </ul>

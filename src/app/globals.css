@@ -80,10 +80,10 @@
   --ink-200: #3a3128;
   --ink-100: #221c16;
   --spot-300: #a85500;
-  --spot-400: #cf6d00;
+  --spot-400: #a85a00; /* text-safe: ≥4.5:1 on paper */
   --spot-500: #ff9a1f;
   --spot-600: #e07f00;
-  --onair: #e0323a;
+  --onair: #c41f2a; /* ≥4.5:1 on paper and on its own 12% tint */
   --ok: #0c9a5f;
   --warn: #b77d00;
   --danger: #b4232a;
@@ -123,7 +123,7 @@
   --danger-bg: #2a0f12;
   --success: #b9f3da;
   --success-bg: #0d2a20;
-  --card-bg: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.015));
+  --card-bg: linear-gradient(180deg, rgb(24 24 34 / 0.86), rgb(16 16 24 / 0.86));
   --card-border: rgb(255 255 255 / 0.07);
   --card-shadow: none;
   --glow: rgb(255 190 92 / 0.14);

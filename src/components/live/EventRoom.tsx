@@ -63,8 +63,9 @@ export function EventRoom({ myCerts }: { myCerts: CertificateDTO[] }) {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
-        <div className="min-w-0 space-y-6">
+      {/* Mobile order: player → interact panel → the rest. Desktop: sidebar spans both rows. */}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:grid-rows-[auto_1fr]">
+        <div className="order-1 min-w-0 space-y-6 lg:order-none lg:col-start-1 lg:row-start-1">
           <Player />
           <div className="flex flex-wrap items-center justify-between gap-3">
             <ReactionBar />
@@ -74,7 +75,9 @@ export function EventRoom({ myCerts }: { myCerts: CertificateDTO[] }) {
               </Link>
             )}
           </div>
+        </div>
 
+        <div className="order-3 min-w-0 space-y-6 lg:order-none lg:col-start-1 lg:row-start-2">
           {state.brackets.length > 0 && (
             <section className="card p-5">
               <h2 className="eyebrow mb-4 flex items-center gap-2">
@@ -98,7 +101,7 @@ export function EventRoom({ myCerts }: { myCerts: CertificateDTO[] }) {
         </div>
 
         {/* Sidebar */}
-        <aside className="card flex h-[min(78vh,760px)] min-h-[520px] flex-col overflow-hidden lg:sticky lg:top-20">
+        <aside className="card order-2 flex h-[min(78vh,760px)] min-h-[520px] lg:order-none flex-col overflow-hidden lg:sticky lg:top-20 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
           <div role="tablist" aria-label="Interact" className="grid grid-cols-4 border-b border-white/6 p-1.5">
             {tabs.map((t) => (
               <button

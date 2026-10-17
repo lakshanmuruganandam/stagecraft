@@ -16,3 +16,13 @@ describe("rotating check-in codes", () => {
     expect(verifyCode("e1", "garbage", t)).toBe(false);
   });
 });
+
+describe("stage keys", () => {
+  it("authorize only the matching event", async () => {
+    const { stageKey, verifyStageKey } = await import("@/lib/checkin");
+    expect(verifyStageKey("e1", stageKey("e1"))).toBe(true);
+    expect(verifyStageKey("e2", stageKey("e1"))).toBe(false);
+    expect(verifyStageKey("e1", null)).toBe(false);
+    expect(verifyStageKey("e1", "short")).toBe(false);
+  });
+});

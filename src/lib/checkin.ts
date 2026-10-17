@@ -17,6 +17,22 @@ export function currentCode(eventId: string, now = Date.now()) {
   return { code: `${w.toString(36)}.${sign(eventId, w)}`, expiresAt: (w + 1) * WINDOW_MS };
 }
 
+/**
+ * Stage key: an HMAC that authorizes a screen to *display* check-in codes.
+ * It travels only in the organizer's Stage/OBS link, so nobody at home can
+ * fetch the rotating code and check in remotely.
+ */
+export function stageKey(eventId: string) {
+  return createHmac("sha256", rootSecret()).update(`stage:${eventId}`).digest("base64url").slice(0, 22);
+}
+
+export function verifyStageKey(eventId: string, key: string | null) {
+  if (!key) return false;
+  const a = Buffer.from(stageKey(eventId));
+  const b = Buffer.from(key);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 export function verifyCode(eventId: string, code: string, now = Date.now()): boolean {
   const [ws, sig] = code.split(".");
   const w = parseInt(ws ?? "", 36);

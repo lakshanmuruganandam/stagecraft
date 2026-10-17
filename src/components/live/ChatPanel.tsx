@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { EyeOff, MicOff, Pin, PinOff, Send } from "lucide-react";
 import { useLive } from "./LiveProvider";
 import { Avatar } from "@/components/ui/primitives";
@@ -115,9 +116,10 @@ export function ChatPanel() {
 }
 
 export function SignInPrompt({ what }: { what: string }) {
+  const path = usePathname();
   return (
     <p className="text-center text-sm text-ink-300">
-      <Link href={`/login?next=${typeof window === "undefined" ? "/" : encodeURIComponent(location.pathname)}`} className="font-medium text-spot-400 underline-offset-4 hover:underline">
+      <Link href={`/login?next=${encodeURIComponent(path)}`} className="font-medium text-spot-400 underline-offset-4 hover:underline">
         Sign in
       </Link>{" "}
       to {what}.

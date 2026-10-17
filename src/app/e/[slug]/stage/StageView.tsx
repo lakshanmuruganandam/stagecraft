@@ -9,10 +9,10 @@ import { BracketView } from "@/components/live/BracketView";
 import { Logo } from "@/components/site/Logo";
 import type { StageScene } from "@/lib/types";
 
-export function StageView({ transparent }: { transparent: boolean }) {
+export function StageView({ transparent, stageKey }: { transparent: boolean; stageKey: string | null }) {
   const { state, reactions, houseColor, houseName } = useLive();
   const origin = useClientValue(() => location.origin);
-  const checkin = useCheckinCode(state.event.id, state.event.status === "live");
+  const checkin = useCheckinCode(state.event.id, state.event.status === "live" && !!stageKey, stageKey);
   const now = useNow(1000);
   const left = checkin && now ? Math.max(0, Math.ceil((checkin.expiresAt - now) / 1000)) : 0;
   const e = state.event;
@@ -153,7 +153,7 @@ export function StageView({ transparent }: { transparent: boolean }) {
 }
 
 /** Polls the rotating check-in code while the event is live. */
-function useCheckinCode(eventId: string, live: boolean) {
+function useCheckinCode(eventId: string, live: boolean, key: string | null) {
   const [code, setCode] = useState<{ code: string; expiresAt: number } | null>(null);
   useEffect(() => {
     if (!live) return;
@@ -161,7 +161,7 @@ function useCheckinCode(eventId: string, live: boolean) {
     let stop = false;
     const load = async () => {
       try {
-        const res = await fetch(`/api/events/${eventId}/checkin-code`, { cache: "no-store" });
+        const res = await fetch(`/api/events/${eventId}/checkin-code?key=${encodeURIComponent(key ?? "")}`, { cache: "no-store" });
         if (res.ok && !stop) {
           const next = (await res.json()) as { code: string; expiresAt: number };
           setCode(next);
@@ -178,6 +178,6 @@ function useCheckinCode(eventId: string, live: boolean) {
       stop = true;
       clearTimeout(timer);
     };
-  }, [eventId, live]);
+  }, [eventId, live, key]);
   return live ? code : null;
 }

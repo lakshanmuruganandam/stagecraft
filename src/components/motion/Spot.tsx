@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 
 /** Tips Spot offers, by page. The first one shows on arrival; a click cycles. */
 const TIPS: { match: (p: string) => boolean; lines: string[] }[] = [
-  { match: (p) => p === "/", lines: ["Psst, three shows are on air right now! 🎬", "Press ⌘K to jump anywhere.", "Those mountains? That's the House Cup, live. 🏔️", "Scroll down: I'll walk you through a show."] },
+  { match: (p) => p === "/", lines: ["Psst! See what's on air right now. 🎬", "Press ⌘K to jump anywhere.", "Those mountains? That's the House Cup, live. 🏔️", "Scroll down: I'll walk you through a show."] },
   { match: (p) => p.startsWith("/e/"), lines: ["Upvote questions you want answered! ▲", "Tap a reaction and watch it float up. 🔥", "Predictions lock when a match goes live."] },
   { match: (p) => p.startsWith("/houses"), lines: ["Every point here came from a real event.", "Peek at a house's common room. 🏡"] },
   { match: (p) => p.startsWith("/quests"), lines: ["Light up the constellation, star by star. ✨", "Cross-house events earn bonus XP!"] },
@@ -42,9 +42,11 @@ export function Spot() {
 
   // New page: first tip, spoken briefly.
   useEffect(() => {
+    // On phones Spot stays quiet until tapped, so it never covers content.
+    const roomy = matchMedia("(min-width: 768px)").matches;
     const a = setTimeout(() => {
       setI(0);
-      setTalk(true);
+      setTalk(roomy);
     }, 1200);
     const b = setTimeout(() => setTalk(false), 10000);
     return () => {
@@ -90,7 +92,7 @@ export function Spot() {
   return (
     <div className="fixed bottom-5 right-5 z-50 flex items-end gap-2 print:hidden">
       {talk && (
-        <div role="status" className="relative mb-12 max-w-[15rem] animate-[castin_.45s_cubic-bezier(.2,.8,.2,1)_both] rounded-2xl rounded-br-sm border border-white/10 bg-ink-850 px-4 py-3 text-sm leading-snug text-ink-100 shadow-[0_18px_40px_-18px_rgb(60_35_5/0.45)]">
+        <div role="status" className="relative mb-10 max-w-[13rem] md:mb-12 md:max-w-[15rem] animate-[castin_.45s_cubic-bezier(.2,.8,.2,1)_both] rounded-2xl rounded-br-sm border border-white/10 bg-ink-850 px-4 py-3 text-sm leading-snug text-ink-100 shadow-[0_18px_40px_-18px_rgb(60_35_5/0.45)]">
           {tips[i % tips.length]}
           <button
             onClick={() => {
@@ -108,7 +110,7 @@ export function Spot() {
           </button>
         </div>
       )}
-      <button ref={body} onClick={say} aria-label="Spot, your StageCraft guide. Show a tip" className="group relative size-20 animate-[bob_3.2s_ease-in-out_infinite] motion-reduce:animate-none">
+      <button ref={body} onClick={say} aria-label="Spot, your StageCraft guide. Show a tip" className="group relative size-14 animate-[bob_3.2s_ease-in-out_infinite] motion-reduce:animate-none md:size-20">
         {/* Beam on hover / focus */}
         <span aria-hidden className="pointer-events-none absolute left-1/2 top-[70%] h-28 w-24 -translate-x-1/2 origin-top scale-y-0 bg-[linear-gradient(180deg,rgb(255_211_110/0.55),transparent)] opacity-0 transition duration-300 [clip-path:polygon(35%_0,65%_0,100%_100%,0_100%)] group-hover:scale-y-100 group-hover:opacity-100 group-focus-visible:scale-y-100 group-focus-visible:opacity-100" />
         <svg viewBox="0 0 80 80" className="relative drop-shadow-[0_10px_14px_rgb(60_35_5/0.35)]">

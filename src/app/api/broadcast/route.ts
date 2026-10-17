@@ -8,7 +8,7 @@ import { take } from "@/lib/ratelimit";
 const Body = z.object({
   title: z.string().trim().min(2).max(60),
   message: z.string().trim().min(2).max(180),
-  href: z.string().trim().startsWith("/").max(200).optional(),
+  href: z.string().trim().regex(/^\/(?![\/\\])/, "Links must be pages on this site").max(200).optional(),
 });
 
 /** Admin spotlight broadcast: takes over every connected screen for a moment. */

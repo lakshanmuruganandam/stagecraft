@@ -79,7 +79,7 @@ export async function houseHome(slug: string): Promise<HouseHome | null> {
       })
       .from(s.certificates)
       .innerJoin(s.users, eq(s.users.id, s.certificates.userId))
-      .where(and(eq(s.users.houseId, house.id), sql`${s.certificates.revokedAt} is null`))
+      .where(and(eq(s.users.houseId, house.id), sql`${s.certificates.revokedAt} is null`, sql`${s.users.suspendedAt} is null`))
       .groupBy(s.users.id)
       .orderBy(desc(sql`sum(case when ${s.certificates.kind} in ('winner','runner-up','third') then 5 else 1 end)`))
       .limit(6),
@@ -117,7 +117,7 @@ export async function radarEvents(): Promise<EventDTO[]> {
 /* ───────────── iCalendar (RFC 5545) ───────────── */
 
 const icsDate = (ms: number) => new Date(ms).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-const icsText = (s: string) => s.replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/([,;])/g, "\\$1");
+const icsText = (s: string) => s.replace(/\\/g, "\\\\").replace(/\r\n|\r|\n/g, "\\n").replace(/([,;])/g, "\\$1");
 
 /** Folds a content line at 75 octets (UTF-8 safe), continuation lines start with a space. */
 function fold(line: string): string {

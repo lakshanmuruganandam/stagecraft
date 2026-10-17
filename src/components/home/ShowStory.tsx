@@ -40,13 +40,14 @@ export function ShowStory() {
           {STEPS.map((s, i) => (
             <li key={s.k}>
               <div ref={(el) => { refs.current[i] = el; }} data-step={i} className="flex min-h-[46vh] flex-col justify-center lg:min-h-[72vh]">
-                <div className={`transition-all duration-500 ${active === i ? "opacity-100" : "opacity-35 lg:translate-x-0"}`}>
+                <div className="transition-colors duration-500">
                   <span className={`grid size-12 place-items-center rounded-2xl transition-colors duration-500 ${active === i ? "bg-spot-500 text-on-spot shadow-[0_10px_30px_-10px_var(--spot-500)]" : "bg-white/6 text-ink-400"}`}>
                     <s.icon size={22} />
                   </span>
-                  <p className="timecode mt-5 text-sm text-spot-300">0{i + 1} / 05</p>
-                  <h3 className="mt-1 font-display text-2xl font-semibold text-white sm:text-3xl">{s.title}</h3>
-                  <p className="mt-3 max-w-md text-[1.02rem] leading-relaxed text-ink-300">{s.body}</p>
+                  <p className={`timecode mt-5 text-sm ${active === i ? "text-spot-300" : "text-ink-400"}`}>0{i + 1} / 05</p>
+                  {/* Inactive steps are muted by colour, not opacity, so they keep 4.5:1 contrast. */}
+                  <h3 className={`mt-1 font-display text-2xl font-semibold transition-colors duration-500 sm:text-3xl ${active === i ? "text-white" : "text-ink-400"}`}>{s.title}</h3>
+                  <p className={`mt-3 max-w-md text-[1.02rem] leading-relaxed transition-colors duration-500 ${active === i ? "text-ink-300" : "text-ink-400"}`}>{s.body}</p>
                 </div>
                 {/* Mobile: inline visual */}
                 <div className="mt-6 lg:hidden">

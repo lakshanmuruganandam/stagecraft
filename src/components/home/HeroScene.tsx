@@ -6,6 +6,7 @@ import { BadgeCheck, ChevronUp, Radio, Swords } from "lucide-react";
 import type { PollDTO } from "@/lib/types";
 
 type Scene = {
+  live: number;
   poll: { poll: PollDTO; event: { slug: string; title: string } } | null;
   question: { body: string; votes: number; slug: string } | null;
   match: { slug: string; game: string | null; teams: { name: string; color: string }[]; scoreA: number; scoreB: number } | null;
@@ -137,7 +138,7 @@ export function HeroScene({ scene }: { scene: Scene }) {
         {/* On-air chip */}
         <Layer z={180} className="bottom-[22%] right-[6%] animate-[rise_.9s_.7s_both]">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-ink-850/96 px-3.5 py-2 text-xs font-medium text-ink-100 shadow-lg">
-            <Radio size={13} className="text-onair" /> 3 shows on air
+            <Radio size={13} className="text-onair" /> {scene.live ? `${scene.live} show${scene.live === 1 ? "" : "s"} on air` : "Next show soon"}
           </span>
         </Layer>
 

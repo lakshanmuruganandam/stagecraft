@@ -51,7 +51,8 @@ async function Radar({ searchParams }: { searchParams: PageProps<"/calendar">["s
   const houseSlug = one(sp.house);
   const house = houses.find((h) => h.slug === houseSlug);
   const monthParam = one(sp.m);
-  const [y, m] = /^\d{4}-\d{2}$/.test(monthParam ?? "") ? monthParam!.split("-").map(Number) : ymd(now).split("-").slice(0, 2).map(Number);
+  const valid = /^(\d{4})-(0[1-9]|1[0-2])$/.test(monthParam ?? "");
+  const [y, m] = valid ? monthParam!.split("-").map(Number) : ymd(now).split("-").slice(0, 2).map(Number);
 
   const events = all.filter((e) => (!kind || e.kind === kind) && (!house || e.hostHouseIds.includes(house.id)));
   const prev = `${m === 1 ? y - 1 : y}-${String(m === 1 ? 12 : m - 1).padStart(2, "0")}`;
