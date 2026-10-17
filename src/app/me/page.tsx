@@ -6,6 +6,7 @@ import { getViewer } from "@/lib/auth";
 import { certificatesFor } from "@/server/queries";
 import { Avatar, Badge, buttonClass, Empty } from "@/components/ui/primitives";
 import { fmtDate } from "@/lib/format";
+import { BadgeShelf, IdentityCard } from "@/components/odyssey/Identity";
 import type { CertKind } from "@/lib/types";
 
 export const metadata: Metadata = { title: "My credentials" };
@@ -45,6 +46,22 @@ async function Portfolio() {
           <p className="mt-1 text-sm text-ink-300">
             {certs.length} credential{certs.length === 1 ? "" : "s"} · {wins} podium finish{wins === 1 ? "" : "es"}
           </p>
+        </div>
+      </div>
+      <div className="mt-10 grid items-start gap-6 lg:grid-cols-[380px_1fr]">
+        <Suspense fallback={<div className="aspect-[1.6] animate-pulse rounded-3xl bg-white/5" />}>
+          <IdentityCard userId={v.id} />
+        </Suspense>
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="eyebrow">Badges</h2>
+            <Link href="/quests" className="text-sm text-spot-300 hover:underline">
+              Quest map →
+            </Link>
+          </div>
+          <Suspense fallback={<div className="h-40 animate-pulse rounded-2xl bg-white/5" />}>
+            <BadgeShelf userId={v.id} limit={8} />
+          </Suspense>
         </div>
       </div>
       <h2 className="eyebrow mb-4 mt-12">Verified credentials</h2>

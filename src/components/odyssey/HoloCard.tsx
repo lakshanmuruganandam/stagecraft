@@ -52,7 +52,7 @@ export function HoloCard(p: HoloCardProps) {
   const C = 2 * Math.PI * R;
 
   return (
-    <div className="[perspective:1100px]">
+    <div data-theme="stage" className="[perspective:1100px]">
       <div
         ref={ref}
         onPointerMove={move}

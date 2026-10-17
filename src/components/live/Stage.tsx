@@ -14,7 +14,7 @@ export function Player() {
   const e = state.event;
 
   return (
-    <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/8 bg-black">
+    <div data-theme="stage" className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/8 bg-black">
       {src && e.status === "live" ? (
         <iframe
           src={src}
