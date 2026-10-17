@@ -9,11 +9,13 @@ import { Avatar, buttonClass } from "@/components/ui/primitives";
 import { Logo } from "./Logo";
 import { NavLinks } from "./NavLinks";
 import { HereInput } from "./HereInput";
+import { CommandPalette, PaletteButton } from "./CommandPalette";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/6 bg-ink-950/75 backdrop-blur-xl">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-full focus:bg-spot-500 focus:px-4 focus:py-2 focus:text-ink-950">
+    <header className="sticky top-0 z-40 border-b border-white/8 bg-ink-950/70 backdrop-blur-xl backdrop-saturate-150">
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-full focus:bg-spot-500 focus:px-4 focus:py-2 focus:text-on-spot">
         Skip to content
       </a>
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
@@ -27,6 +29,9 @@ export function Header() {
           <ManagedNav />
         </Suspense>
         <div className="ml-auto flex items-center gap-2">
+          <PaletteButton />
+          <ThemeToggle />
+          <CommandPalette />
           <Suspense fallback={<div className="h-9 w-24 animate-pulse rounded-full bg-white/5" />}>
             <UserMenu />
           </Suspense>

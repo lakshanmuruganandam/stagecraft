@@ -17,10 +17,12 @@ import { getDb, schema } from "@/db";
  * an instance (always true in dev / single-node deploys).
  */
 
-export type Channel = `e:${string}` | `a:${string}` | `u:${string}`;
+export type Channel = `e:${string}` | `a:${string}` | `u:${string}` | "g:all";
 export const publicChannel = (eventId: string): Channel => `e:${eventId}`;
 export const adminChannel = (eventId: string): Channel => `a:${eventId}`;
 export const userChannel = (userId: string): Channel => `u:${userId}`;
+/** Platform-wide announcements (admin spotlight broadcasts). */
+export const globalChannel: Channel = "g:all";
 
 export type LiveMessage = { seq: number; channel: string; type: string; payload: unknown };
 

@@ -68,7 +68,7 @@ async function Result({ params }: { params: PageProps<"/verify/[id]">["params"] 
 
 function Panel({ tone, icon, title, subtitle }: { tone: "ok" | "bad"; icon: React.ReactNode; title: string; subtitle: string }) {
   return (
-    <div className={`flex gap-4 rounded-2xl border p-6 ${tone === "ok" ? "border-ok/30 bg-ok/8 text-ok" : "border-onair/40 bg-onair/8 text-[#ff8a8a]"}`}>
+    <div className={`flex gap-4 rounded-2xl border p-6 ${tone === "ok" ? "border-ok/30 bg-ok/8 text-ok" : "border-onair/40 bg-onair/8 text-danger"}`}>
       {icon}
       <div>
         <h1 className="font-display text-2xl font-semibold text-white">{title}</h1>

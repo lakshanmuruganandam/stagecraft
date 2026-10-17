@@ -106,7 +106,7 @@ function MatchCard({ match: m, bracket, connector }: { match: BMatch; bracket: B
     <div className="relative">
       <div className={`overflow-hidden rounded-xl border bg-ink-900 ${m.status === "live" ? "border-onair/60 shadow-[0_0_0_3px_rgb(255_59_59/0.12)]" : "border-white/8"}`}>
         {m.status === "live" && (
-          <div className="flex items-center gap-1.5 bg-onair/15 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-widest text-[#ff8a8a]">
+          <div className="flex items-center gap-1.5 bg-onair/15 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-widest text-danger">
             <span className="size-1.5 animate-tally rounded-full bg-onair" /> Live now
           </div>
         )}

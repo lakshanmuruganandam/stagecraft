@@ -36,7 +36,7 @@ async function Board() {
                 <p className="font-display text-lg font-semibold text-white">{r.name}</p>
                 <p className="timecode text-sm text-ink-300">{r.points} pts</p>
                 <div className="mt-2 grid place-items-center rounded-t-2xl" style={{ height: [120, 168, 96][i], background: `linear-gradient(180deg, ${r.color}, ${r.color}33)` }}>
-                  <span className="font-display text-4xl font-bold text-ink-950/70">{[2, 1, 3][i]}</span>
+                  <span className="font-display text-4xl font-bold text-on-spot/70">{[2, 1, 3][i]}</span>
                 </div>
               </div>
             ) : (
@@ -68,7 +68,7 @@ async function Board() {
           {awards.length === 0 && <li className="p-5 text-sm text-ink-400">No event awards yet.</li>}
           {awards.map((a) => (
             <li key={a.id} className="flex gap-3 px-4 py-3">
-              <span className="timecode mt-0.5 shrink-0 rounded-md px-1.5 text-sm font-semibold text-ink-950" style={{ background: a.color }}>
+              <span className="timecode mt-0.5 shrink-0 rounded-md px-1.5 text-sm font-semibold text-on-spot" style={{ background: a.color }}>
                 +{a.points}
               </span>
               <div className="min-w-0 text-sm">

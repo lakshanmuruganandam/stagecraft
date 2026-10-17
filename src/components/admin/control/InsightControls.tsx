@@ -24,7 +24,7 @@ export function RevokeButton({ certificateId }: { certificateId: string }) {
   const [reason, setReason] = useState("");
   if (!open)
     return (
-      <button onClick={() => setOpen(true)} className="text-xs text-ink-400 underline-offset-2 hover:text-[#ff8a8a] hover:underline">
+      <button onClick={() => setOpen(true)} className="text-xs text-ink-400 underline-offset-2 hover:text-danger hover:underline">
         Revoke
       </button>
     );

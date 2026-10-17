@@ -2,7 +2,8 @@
 
 import { QRCodeSVG } from "./qr";
 import { useLive } from "@/components/live/LiveProvider";
-import { useClientValue } from "@/components/live/useNow";
+import { useClientValue, useNow } from "@/components/live/useNow";
+import { useEffect, useState } from "react";
 import { PollCard } from "@/components/live/PollsPanel";
 import { BracketView } from "@/components/live/BracketView";
 import { Logo } from "@/components/site/Logo";
@@ -11,6 +12,9 @@ import type { StageScene } from "@/lib/types";
 export function StageView({ transparent }: { transparent: boolean }) {
   const { state, reactions, houseColor, houseName } = useLive();
   const origin = useClientValue(() => location.origin);
+  const checkin = useCheckinCode(state.event.id, state.event.status === "live");
+  const now = useNow(1000);
+  const left = checkin && now ? Math.max(0, Math.ceil((checkin.expiresAt - now) / 1000)) : 0;
   const e = state.event;
 
   const openPoll = state.polls.find((p) => p.status === "open") ?? state.polls.find((p) => p.status === "closed");
@@ -33,7 +37,7 @@ export function StageView({ transparent }: { transparent: boolean }) {
               : "lower-third";
 
   return (
-    <div className={`stage-root fixed inset-0 z-[70] overflow-hidden ${transparent ? "transparent" : "bg-[radial-gradient(120%_80%_at_50%_0%,hsl(var(--h)_60%_22%),#050507_70%)]"}`} style={{ ["--h" as string]: e.hue }}>
+    <div data-theme="stage" className={`stage-root fixed inset-0 z-[70] overflow-hidden ${transparent ? "transparent" : "bg-[radial-gradient(120%_80%_at_50%_0%,hsl(var(--h)_60%_22%),#050507_70%)]"}`} style={{ ["--h" as string]: e.hue }}>
       {!transparent && (
         <div className="absolute left-10 top-8 flex items-center gap-3">
           <Logo size={34} />
@@ -114,17 +118,25 @@ export function StageView({ transparent }: { transparent: boolean }) {
         </div>
       )}
 
-      {/* Join-in QR */}
+      {/* Proof-of-presence QR: rotates every 30s so it only works in the room */}
       {origin && scene !== "blank" && (
         <div className="absolute bottom-[6vh] right-[4vw] flex items-center gap-4 rounded-2xl bg-ink-950/90 p-3 pr-5 ring-1 ring-white/10">
-          <div className="rounded-lg bg-white p-2">
-            <QRCodeSVG text={`${origin}/e/${e.slug}`} size={92} />
+          <div className="relative rounded-lg bg-paper p-2">
+            <QRCodeSVG text={checkin ? `${origin}/e/${e.slug}/checkin?c=${checkin.code}` : `${origin}/e/${e.slug}`} size={104} />
           </div>
-          <p className="text-[1vw] leading-tight text-ink-200">
-            Scan to vote,
-            <br />
-            ask &amp; react live
-          </p>
+          <div className="text-[1vw] leading-tight text-ink-200">
+            <p className="font-display text-[1.25vw] font-semibold text-white">{checkin ? "Scan to check in" : "Scan to join"}</p>
+            <p>vote, ask &amp; react live</p>
+            {checkin && (
+              <p className="timecode mt-2 flex items-center gap-2 text-[0.9vw] text-spot-300">
+                <svg viewBox="0 0 36 36" className="size-[1.6vw] -rotate-90" aria-hidden>
+                  <circle cx="18" cy="18" r="15" fill="none" stroke="rgb(255 255 255 / .15)" strokeWidth="4" />
+                  <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeWidth="4" strokeDasharray={`${(left / 30) * 94.2} 94.2`} />
+                </svg>
+                new code in {left}s
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -138,4 +150,34 @@ export function StageView({ transparent }: { transparent: boolean }) {
       </div>
     </div>
   );
+}
+
+/** Polls the rotating check-in code while the event is live. */
+function useCheckinCode(eventId: string, live: boolean) {
+  const [code, setCode] = useState<{ code: string; expiresAt: number } | null>(null);
+  useEffect(() => {
+    if (!live) return;
+    let timer: ReturnType<typeof setTimeout>;
+    let stop = false;
+    const load = async () => {
+      try {
+        const res = await fetch(`/api/events/${eventId}/checkin-code`, { cache: "no-store" });
+        if (res.ok && !stop) {
+          const next = (await res.json()) as { code: string; expiresAt: number };
+          setCode(next);
+          timer = setTimeout(load, Math.max(1000, next.expiresAt - Date.now() + 250));
+          return;
+        }
+      } catch {
+        /* retry below */
+      }
+      if (!stop) timer = setTimeout(load, 5000);
+    };
+    load();
+    return () => {
+      stop = true;
+      clearTimeout(timer);
+    };
+  }, [eventId, live]);
+  return live ? code : null;
 }

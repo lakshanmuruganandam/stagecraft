@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist_Mono, Instrument_Sans } from "next/font/google";
 import { Header } from "@/components/site/Header";
 import { Toaster } from "@/components/site/Toaster";
+import { GlobalBroadcast } from "@/components/site/GlobalBroadcast";
+import { GlowTracker } from "@/components/site/GlowTracker";
+import { AmbientBackground } from "@/components/site/AmbientBackground";
+import { themeScript } from "@/components/site/ThemeToggle";
 import { siteUrl } from "@/lib/env";
 import "./globals.css";
 
@@ -17,12 +21,16 @@ export const metadata: Metadata = {
   openGraph: { type: "website", siteName: "StageCraft" },
 };
 
-export const viewport: Viewport = { themeColor: "#07070a", colorScheme: "dark" };
+export const viewport: Viewport = { themeColor: "#fbf5ea", colorScheme: "light dark" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-IN" className={`${display.variable} ${sans.variable} ${mono.variable} h-full`}>
+    <html lang="en-IN" suppressHydrationWarning className={`${display.variable} ${sans.variable} ${mono.variable} h-full`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-full flex-col">
+        <AmbientBackground />
         <Header />
         <main id="main" className="flex-1">
           {children}
@@ -31,6 +39,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           StageCraft — built for Build-a-Thon 1.0 · Theme 03 · Code Crafters × the houses of IITM BS
         </footer>
         <Toaster />
+        <GlobalBroadcast />
+        <GlowTracker />
       </body>
     </html>
   );

@@ -112,7 +112,7 @@ export function QAPanel() {
                 ) : (
                   <span />
                 )}
-                <button disabled={busy || body.trim().length < 8} className="rounded-full bg-spot-500 px-4 py-1.5 text-sm font-medium text-ink-950 disabled:opacity-40">
+                <button disabled={busy || body.trim().length < 8} className="rounded-full bg-spot-500 px-4 py-1.5 text-sm font-medium text-on-spot disabled:opacity-40">
                   Ask
                 </button>
               </div>

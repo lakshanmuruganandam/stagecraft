@@ -64,7 +64,7 @@ async function UserDetail({ params }: { params: PageProps<"/admin/users/[id]">["
             <Badge tone="muted">Joined {fmtDate(u.createdAt, { day: "numeric", month: "short", year: "numeric" })}</Badge>
             <Badge tone="muted">Last login {u.lastLoginAt ? fmtRelative(u.lastLoginAt, t) : "never"}</Badge>
           </div>
-          {u.suspendedReason && <p className="mt-2 text-sm text-[#ffb3b3]">Reason: {u.suspendedReason}</p>}
+          {u.suspendedReason && <p className="mt-2 text-sm text-danger">Reason: {u.suspendedReason}</p>}
         </div>
       </div>
 

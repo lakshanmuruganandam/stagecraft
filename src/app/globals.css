@@ -1,40 +1,56 @@
 @import "tailwindcss";
 @source "../";
 
-@theme {
+/*
+ * Theme: every colour utility resolves through a CSS variable, so a whole
+ * subtree can switch theme by setting data-theme. Tokens are semantic:
+ *   ink-950 → page   ink-900/850 → raised surfaces   ink-100 → strongest text
+ *   white   → foreground ("ink on paper"); /alpha variants give hairlines & tints
+ *   spot-*  → the follow-spot accent; on-spot → text placed on spot-500
+ * Daylight (default) is bright and paper-like; Stage is the dark broadcast look,
+ * used by the OBS overlay and available as a toggle.
+ */
+@theme inline {
   --font-display: var(--font-bricolage), ui-sans-serif, system-ui;
   --font-sans: var(--font-instrument), ui-sans-serif, system-ui;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  --color-ink-950: #07070a;
-  --color-ink-900: #0d0d12;
-  --color-ink-850: #121219;
-  --color-ink-800: #181822;
-  --color-ink-700: #23232f;
-  --color-ink-600: #33333f;
-  --color-ink-500: #4a4a58;
-  --color-ink-400: #737385;
-  --color-ink-300: #a3a3b4;
-  --color-ink-200: #cfcfdb;
-  --color-ink-100: #ececf3;
+  --color-white: var(--fg);
+  --color-ink-950: var(--ink-950);
+  --color-ink-900: var(--ink-900);
+  --color-ink-850: var(--ink-850);
+  --color-ink-800: var(--ink-800);
+  --color-ink-700: var(--ink-700);
+  --color-ink-600: var(--ink-600);
+  --color-ink-500: var(--ink-500);
+  --color-ink-400: var(--ink-400);
+  --color-ink-300: var(--ink-300);
+  --color-ink-200: var(--ink-200);
+  --color-ink-100: var(--ink-100);
 
-  --color-spot-300: #ffd28a;
-  --color-spot-400: #ffbf5c;
-  --color-spot-500: #ffa928;
-  --color-spot-600: #e08a00;
+  --color-spot-300: var(--spot-300);
+  --color-spot-400: var(--spot-400);
+  --color-spot-500: var(--spot-500);
+  --color-spot-600: var(--spot-600);
+  --color-on-spot: #1d1206;
+  --color-paper: #ffffff;
 
-  --color-onair: #ff3b3b;
-  --color-ok: #3ddc97;
-  --color-warn: #ffcc4d;
+  --color-onair: var(--onair);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
 
-  --radius-card: 1.1rem;
-  --animate-rise: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --radius-card: 1.25rem;
+  --animate-rise: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-floatup: floatup 2.6s ease-out forwards;
   --animate-tally: tally 1.6s ease-in-out infinite;
 
   @keyframes rise {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: none; }
+    from { opacity: 0; transform: translateY(18px); filter: blur(4px); }
+    to { opacity: 1; transform: none; filter: none; }
   }
   @keyframes floatup {
     0% { opacity: 0; transform: translateY(0) scale(0.6); }
@@ -42,37 +58,96 @@
     100% { opacity: 0; transform: translateY(-340px) translateX(var(--drift, 0px)) scale(1); }
   }
   @keyframes tally {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgb(255 59 59 / 0.55); }
-    50% { opacity: 0.7; box-shadow: 0 0 0 6px rgb(255 59 59 / 0); }
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgb(229 50 58 / 0.5); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 6px rgb(229 50 58 / 0); }
   }
 }
 
-:root {
+/* Daylight — warm paper, crisp ink, saturated accents. */
+:root,
+[data-theme="daylight"] {
+  color-scheme: light;
+  --fg: #1c1610;
+  --ink-950: #fbf5ea;
+  --ink-900: #fffdf9;
+  --ink-850: #ffffff;
+  --ink-800: #f4ecde;
+  --ink-700: #e8dfce;
+  --ink-600: #d4c6ae;
+  --ink-500: #a0907a;
+  --ink-400: #6f6250;
+  --ink-300: #54493b;
+  --ink-200: #3a3128;
+  --ink-100: #221c16;
+  --spot-300: #a85500;
+  --spot-400: #cf6d00;
+  --spot-500: #ff9a1f;
+  --spot-600: #e07f00;
+  --onair: #e0323a;
+  --ok: #0c9a5f;
+  --warn: #b77d00;
+  --danger: #b4232a;
+  --danger-bg: #fdecec;
+  --success: #0b7a4c;
+  --success-bg: #e7f7ef;
+  --card-bg: rgb(255 255 255 / 0.78);
+  --card-border: rgb(60 40 15 / 0.09);
+  --card-shadow: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 12px 32px -18px rgb(80 50 10 / 0.25);
+  --glow: rgb(255 154 31 / 0.16);
+  --grain: 0.025;
+}
+
+/* Stage — the dark broadcast look. */
+[data-theme="stage"] {
   color-scheme: dark;
+  --fg: #ffffff;
+  --ink-950: #07070a;
+  --ink-900: #0d0d12;
+  --ink-850: #121219;
+  --ink-800: #181822;
+  --ink-700: #23232f;
+  --ink-600: #33333f;
+  --ink-500: #4a4a58;
+  --ink-400: #737385;
+  --ink-300: #a3a3b4;
+  --ink-200: #cfcfdb;
+  --ink-100: #ececf3;
+  --spot-300: #ffd28a;
+  --spot-400: #ffbf5c;
+  --spot-500: #ffa928;
+  --spot-600: #e08a00;
+  --onair: #ff3b3b;
+  --ok: #3ddc97;
+  --warn: #ffcc4d;
+  --danger: #ff9a9a;
+  --danger-bg: #2a0f12;
+  --success: #b9f3da;
+  --success-bg: #0d2a20;
+  --card-bg: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.015));
+  --card-border: rgb(255 255 255 / 0.07);
+  --card-shadow: none;
+  --glow: rgb(255 190 92 / 0.14);
+  --grain: 0.035;
 }
 
 html {
-  background: var(--color-ink-950);
+  background: var(--ink-950);
 }
 
 body {
-  background:
-    radial-gradient(1200px 600px at 15% -10%, rgb(255 169 40 / 0.07), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, rgb(120 90 255 / 0.05), transparent 60%),
-    var(--color-ink-950);
-  color: var(--color-ink-100);
+  background: var(--ink-950);
+  color: var(--ink-100);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Film-grain texture so flat darks don't band. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 60;
-  opacity: 0.035;
+  opacity: var(--grain);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
@@ -83,13 +158,15 @@ body::before {
 }
 
 ::selection {
-  background: rgb(255 169 40 / 0.35);
+  background: rgb(255 154 31 / 0.3);
 }
 
 @utility card {
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.015));
-  border: 1px solid rgb(255 255 255 / 0.07);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: var(--radius-card);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(14px);
 }
 
 @utility timecode {
@@ -147,4 +224,42 @@ html:has(.stage-root.transparent) {
 }
 body:has(.stage-root.transparent) {
   background: transparent !important;
+}
+
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+@keyframes beam { from { opacity: 0; transform: scaleY(0.2); } to { opacity: 1; transform: none; } }
+@keyframes castin { from { opacity: 0; transform: translateY(24px) scale(0.96); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@keyframes foil { from { transform: translateX(0) rotate(12deg); opacity: 0; } 20% { opacity: 1; } to { transform: translateX(520%) rotate(12deg); opacity: 0; } }
+@keyframes certin { from { opacity: 0; transform: perspective(1200px) rotateX(14deg) translateY(30px) scale(.96); } to { opacity: 1; transform: none; } }
+
+/* Spotlight that slowly sways across the hero, like a follow-spot operator. */
+@keyframes sway { 0%, 100% { transform: translateX(-50%) rotate(-9deg); } 50% { transform: translateX(-50%) rotate(9deg); } }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+/* Cursor-follow glow for anything marked data-glow (driven by GlowTracker). */
+/* [data-glow] elements must be positioned themselves (relative/absolute). */
+[data-glow]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .3s;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), var(--glow), transparent 45%);
+  z-index: 1;
+}
+[data-glow]:hover::after { opacity: 1; }
+
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none !important; flex-wrap: wrap; }
+}
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes floatloop {
+  0% { opacity: 0; transform: translateY(0) scale(.6); }
+  12% { opacity: 1; transform: translateY(-30px) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-320px) translateX(var(--drift, 0px)) scale(.9); }
 }

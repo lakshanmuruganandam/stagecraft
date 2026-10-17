@@ -4,7 +4,7 @@ import { initials } from "@/lib/format";
 
 type Variant = "primary" | "ghost" | "outline" | "danger" | "subtle";
 const variants: Record<Variant, string> = {
-  primary: "bg-spot-500 text-ink-950 hover:bg-spot-400 shadow-[0_6px_24px_-8px_rgb(255_169_40/0.6)]",
+  primary: "bg-spot-500 text-on-spot hover:bg-spot-400 shadow-[0_6px_24px_-8px_rgb(255_169_40/0.6)]",
   ghost: "text-ink-200 hover:bg-white/6 hover:text-white",
   outline: "border border-white/12 text-ink-100 hover:border-white/25 hover:bg-white/4",
   danger: "bg-onair/90 text-white hover:bg-onair",
@@ -31,7 +31,7 @@ export function Badge({ children, className, tone = "neutral" }: { children: Rea
       className={clsx(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[0.68rem] font-medium uppercase tracking-[0.12em]",
         tone === "neutral" && "bg-white/7 text-ink-200",
-        tone === "live" && "bg-onair/15 text-[#ff7a7a] ring-1 ring-onair/40",
+        tone === "live" && "bg-onair/15 text-danger ring-1 ring-onair/40",
         tone === "spot" && "bg-spot-500/15 text-spot-300 ring-1 ring-spot-500/30",
         tone === "ok" && "bg-ok/12 text-ok ring-1 ring-ok/30",
         tone === "muted" && "bg-white/4 text-ink-400",
@@ -56,7 +56,7 @@ export function Avatar({ name, color, size = 28 }: { name: string; color?: strin
   return (
     <span
       aria-hidden
-      className="inline-grid shrink-0 place-items-center rounded-full font-display font-semibold text-ink-950"
+      className="inline-grid shrink-0 place-items-center rounded-full font-display font-semibold text-on-spot"
       style={{ width: size, height: size, fontSize: size * 0.38, background: color ?? "var(--color-ink-400)" }}
     >
       {initials(name)}

@@ -7,6 +7,7 @@ import { getViewer } from "@/lib/auth";
 import { certificatesFor, engagement, leaderboard, listAllEventsForAdmin, listHouses } from "@/server/queries";
 import { AdminSkeleton, Gate } from "@/components/admin/Gate";
 import { ResetDemo } from "@/components/admin/ResetDemo";
+import { BroadcastComposer } from "@/components/admin/BroadcastComposer";
 import { Badge, buttonClass, OnAir, SectionTitle } from "@/components/ui/primitives";
 import { fmtDate, fmtTime, KIND_LABEL } from "@/lib/format";
 import type { EventDTO, HouseDTO } from "@/lib/types";
@@ -71,7 +72,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
         </div>
       </div>
 
-      {reset && <p className="mb-6 rounded-xl border border-ok/30 bg-ok/10 px-4 py-3 text-sm text-[#c9f7e4]">Demo data was reset to a fresh state.</p>}
+      {reset && <p className="mb-6 rounded-xl border border-ok/30 bg-ok/10 px-4 py-3 text-sm text-success">Demo data was reset to a fresh state.</p>}
 
       <dl className={`mb-12 grid grid-cols-2 gap-3 ${stats.length > 4 ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
         {stats.map(({ icon: Icon, label, value, note, href }) => (
@@ -94,6 +95,12 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
           </div>
         ))}
       </dl>
+
+      {v.role === "admin" && (
+        <div className="mb-12">
+          <BroadcastComposer />
+        </div>
+      )}
 
       <div id="events" className="scroll-mt-28 space-y-10">
         {groups.map((g) =>

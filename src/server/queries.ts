@@ -202,3 +202,80 @@ export async function participants(db: DB, eventId: string) {
   const users = await db.select().from(s.users).where(inArray(s.users.id, ids));
   return users.map((u) => ({ ...u, actions: res.find((r) => r.user_id === u.id)!.actions }));
 }
+
+/** Headline numbers for the home page. */
+export async function platformStats() {
+  const db = await getDb();
+  const n = async (q: Promise<{ n: number }[]>) => (await q)[0]?.n ?? 0;
+  const [certs, members, chats, votes, questions, live] = await Promise.all([
+    n(db.select({ n: sql<number>`count(*)` }).from(s.certificates)),
+    n(db.select({ n: sql<number>`count(*)` }).from(s.users)),
+    n(db.select({ n: sql<number>`count(*)` }).from(s.chatMessages)),
+    n(db.select({ n: sql<number>`(select count(*) from poll_votes) + (select count(*) from question_votes) + (select count(*) from act_votes) + (select count(*) from predictions)` }).from(s.houses).limit(1)),
+    n(db.select({ n: sql<number>`count(*)` }).from(s.questions)),
+    n(db.select({ n: sql<number>`count(*)` }).from(s.events).where(eq(s.events.status, "live"))),
+  ]);
+  return { certs, members, interactions: chats + votes + questions, live };
+}
+
+/** The most exciting open poll right now, for the hero's live preview card. */
+export async function featuredPoll() {
+  const db = await getDb();
+  const [row] = await db
+    .select({ id: s.polls.id, eventId: s.polls.eventId, slug: s.events.slug, title: s.events.title })
+    .from(s.polls)
+    .innerJoin(s.events, eq(s.events.id, s.polls.eventId))
+    .where(and(eq(s.polls.status, "open"), eq(s.polls.liveResults, true), eq(s.events.status, "live")))
+    .orderBy(desc(sql`(select count(*) from poll_votes v where v.poll_id = ${s.polls.id})`))
+    .limit(1);
+  if (!row) return null;
+  const { pollDTOs } = await import("./views");
+  const [poll] = await pollDTOs(db, { pollId: row.id }, "public");
+  return poll ? { poll, event: { slug: row.slug, title: row.title } } : null;
+}
+
+/** Real data for the home hero's 3D scene: a live question, match and credential. */
+export async function heroScene() {
+  const db = await getDb();
+  const [poll, [question], [match], [cert]] = await Promise.all([
+    featuredPoll(),
+    db
+      .select({ body: s.questions.body, votes: s.questions.votes, slug: s.events.slug })
+      .from(s.questions)
+      .innerJoin(s.events, eq(s.events.id, s.questions.eventId))
+      .where(and(eq(s.questions.status, "live"), eq(s.events.status, "live")))
+      .orderBy(desc(s.questions.votes))
+      .limit(1),
+    db
+      .select({ m: s.matches, slug: s.events.slug, game: s.brackets.game })
+      .from(s.matches)
+      .innerJoin(s.brackets, eq(s.brackets.id, s.matches.bracketId))
+      .innerJoin(s.events, eq(s.events.id, s.brackets.eventId))
+      .where(eq(s.matches.status, "live"))
+      .limit(1),
+    db
+      .select({ id: s.certificates.id, name: s.certificates.recipientName, achievement: s.certificates.achievement })
+      .from(s.certificates)
+      .where(and(eq(s.certificates.kind, "winner"), sql`${s.certificates.revokedAt} is null`))
+      .orderBy(desc(s.certificates.issuedAt))
+      .limit(1),
+  ]);
+  let teams: { name: string; color: string }[] = [];
+  if (match?.m.aId && match.m.bId) {
+    const rows = await db
+      .select({ id: s.entrants.id, name: s.entrants.name, color: s.houses.color })
+      .from(s.entrants)
+      .leftJoin(s.houses, eq(s.houses.id, s.entrants.houseId))
+      .where(inArray(s.entrants.id, [match.m.aId, match.m.bId]));
+    teams = [match.m.aId, match.m.bId].map((id) => {
+      const r = rows.find((x) => x.id === id);
+      return { name: r?.name ?? "TBD", color: r?.color ?? "#999" };
+    });
+  }
+  return {
+    poll,
+    question: question ?? null,
+    match: match && teams.length === 2 ? { slug: match.slug, game: match.game, teams, scoreA: match.m.scoreA ?? 0, scoreB: match.m.scoreB ?? 0 } : null,
+    cert: cert ?? null,
+  };
+}

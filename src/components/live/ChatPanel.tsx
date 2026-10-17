@@ -102,7 +102,7 @@ export function ChatPanel() {
               disabled={!state.event.settings.chatEnabled && !state.canManage}
               className="h-10 min-w-0 flex-1 rounded-full border border-white/10 bg-ink-900 px-4 text-sm outline-none placeholder:text-ink-500 focus:border-spot-500/50"
             />
-            <button aria-label="Send" disabled={busy || !body.trim()} className="grid size-10 place-items-center rounded-full bg-spot-500 text-ink-950 transition hover:bg-spot-400 disabled:opacity-40">
+            <button aria-label="Send" disabled={busy || !body.trim()} className="grid size-10 place-items-center rounded-full bg-spot-500 text-on-spot transition hover:bg-spot-400 disabled:opacity-40">
               <Send size={16} />
             </button>
           </form>

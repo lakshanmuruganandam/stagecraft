@@ -5,12 +5,17 @@ import { connection } from "next/server";
 import { ArrowRight, Award, BadgeCheck, MessagesSquare, Radio, Swords, Trophy, Vote } from "lucide-react";
 import { EventCard } from "@/components/events/EventCard";
 import { buttonClass, SectionTitle } from "@/components/ui/primitives";
-import { leaderboard, listEvents, listHouses } from "@/server/queries";
+import { heroScene, leaderboard, listEvents, listHouses, platformStats, recentAwards } from "@/server/queries";
+import { CountUp } from "@/components/site/CountUp";
+import { HeroScene } from "@/components/home/HeroScene";
 
 export default function Home() {
   return (
     <>
       <Hero />
+      <Suspense fallback={<div className="h-12 border-y border-white/6" />}>
+        <Ticker />
+      </Suspense>
       <div className="mx-auto max-w-7xl space-y-16 px-4 pb-20 sm:px-6">
         <Suspense fallback={<GridSkeleton />}>
           <EventSections />
@@ -27,11 +32,8 @@ export default function Home() {
 function Hero() {
   return (
     <section className="relative overflow-hidden">
-      <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 hidden w-[62%] lg:block">
-        <Image src="/covers/hero.webp" alt="" fill priority sizes="62vw" className="object-cover object-left opacity-70 [mask-image:linear-gradient(90deg,transparent,black_35%,black_70%,transparent),linear-gradient(180deg,black_60%,transparent)] [mask-composite:intersect]" />
-      </div>
       <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[560px] w-[900px] -translate-x-1/2 bg-[radial-gradient(closest-side,rgb(255_169_40/0.18),transparent)]" />
-      <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 bg-[conic-gradient(from_180deg_at_50%_0%,transparent_150deg,rgb(255_210_138/0.10)_180deg,transparent_210deg)]" />
+      <div aria-hidden className="pointer-events-none absolute left-[38%] top-0 h-[640px] w-[640px] origin-top animate-[sway_14s_ease-in-out_infinite] bg-[conic-gradient(from_180deg_at_50%_0%,transparent_155deg,rgb(255_210_138/0.13)_180deg,transparent_205deg)] motion-reduce:animate-none" />
       <div className="relative mx-auto max-w-7xl px-4 pb-14 pt-16 sm:px-6 sm:pt-24">
         <p className="eyebrow animate-rise">Live events · IITM BS houses</p>
         <h1 className="mt-4 max-w-4xl animate-rise font-display text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.03em] text-white [animation-delay:80ms] sm:text-7xl">
@@ -48,7 +50,13 @@ function Hero() {
             Open the control room <ArrowRight size={16} />
           </Link>
         </div>
+        <Suspense fallback={<div className="mt-12 h-16" />}>
+          <HeroStats />
+        </Suspense>
       </div>
+      <Suspense fallback={null}>
+        <Scene />
+      </Suspense>
     </section>
   );
 }
@@ -120,7 +128,7 @@ async function HouseStrip() {
             <span className="h-2 overflow-hidden rounded-full bg-white/6">
               <span className="block h-full rounded-full" style={{ width: `${(r.points / max) * 100}%`, background: r.color }} />
             </span>
-            <span className="timecode text-right text-ink-200">{r.points}</span>
+            <CountUp value={r.points} className="timecode text-right text-ink-200" />
           </li>
         ))}
       </ol>
@@ -159,6 +167,61 @@ function GridSkeleton() {
       {[0, 1, 2].map((i) => (
         <div key={i} className="h-72 animate-pulse rounded-[1.25rem] bg-white/4" />
       ))}
+    </div>
+  );
+}
+
+async function HeroStats() {
+  await connection();
+  const st = await platformStats();
+  const items = [
+    { label: "shows on air", value: st.live },
+    { label: "live interactions", value: st.interactions },
+    { label: "signed certificates", value: st.certs },
+    { label: "members", value: st.members },
+  ];
+  return (
+    <dl className="mt-12 grid max-w-2xl animate-rise grid-cols-2 gap-x-8 gap-y-4 [animation-delay:320ms] sm:grid-cols-4">
+      {items.map((i) => (
+        <div key={i.label}>
+          <dd className="font-display text-3xl font-semibold text-white">
+            <CountUp value={i.value} />
+          </dd>
+          <dt className="text-xs text-ink-400">{i.label}</dt>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/** Live 3D product scene (real data) on the right of the hero. */
+async function Scene() {
+  await connection();
+  return <HeroScene scene={await heroScene()} />;
+}
+
+/** Scrolling "what's happening" strip, broadcast-ticker style. */
+async function Ticker() {
+  await connection();
+  const [events, awards] = await Promise.all([listEvents(), recentAwards(8)]);
+  const items = [
+    ...events.filter((e) => e.status === "live").map((e) => ({ k: `l${e.id}`, dot: "#ff3b3b", text: `ON AIR · ${e.title}`, href: `/e/${e.slug}` })),
+    ...awards.map((a) => ({ k: `a${a.id}`, dot: a.color, text: `+${a.points} ${a.house} · ${a.reason}`, href: "/leaderboard" })),
+    ...events.filter((e) => e.status === "scheduled").map((e) => ({ k: `s${e.id}`, dot: "#ffa928", text: `COMING UP · ${e.title}`, href: `/e/${e.slug}` })),
+  ];
+  if (!items.length) return null;
+  return (
+    <div className="marquee relative overflow-hidden border-y border-white/6 bg-ink-900/60 py-3 [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]">
+      <ul className="marquee-track flex w-max animate-[marquee_60s_linear_infinite] gap-10 pr-10" aria-label="Latest activity">
+        {[...items, ...items].map((it, i) => (
+          <li key={`${it.k}-${i}`} aria-hidden={i >= items.length || undefined} className="shrink-0">
+            <Link href={it.href} tabIndex={i >= items.length ? -1 : undefined} className="flex items-center gap-2.5 whitespace-nowrap text-sm text-ink-300 hover:text-white">
+              <span className="size-1.5 rounded-full" style={{ background: it.dot }} />
+              <span className="timecode text-[0.8rem]">{it.text}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

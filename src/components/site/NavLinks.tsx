@@ -8,9 +8,12 @@ export function NavLinks({ isManager }: { isManager: boolean }) {
   const path = usePathname();
   const links = [
     { href: "/", label: "Events" },
-    { href: "/leaderboard", label: "Leaderboard" },
+    { href: "/houses", label: "Houses" },
+    { href: "/calendar", label: "Radar" },
+    { href: "/quests", label: "Quests" },
+    { href: "/leaderboard", label: "Cup" },
     { href: "/verify", label: "Verify" },
-    ...(isManager ? [{ href: "/admin", label: "Control room" }] : []),
+    ...(isManager ? [{ href: "/admin", label: "Control" }] : []),
   ];
   return (
     <nav aria-label="Main" className="-mx-1 flex min-w-0 items-center gap-0.5 overflow-x-auto">

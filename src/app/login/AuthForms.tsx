@@ -39,7 +39,7 @@ function PasswordInput({ name, autoComplete, defaultValue }: { name: string; aut
 function ErrorNote({ state }: { state: FormState }) {
   if (!state?.error) return null;
   return (
-    <p role="alert" className="rounded-xl border border-onair/30 bg-onair/10 px-3 py-2 text-sm text-[#ffc2c2]">
+    <p role="alert" className="rounded-xl border border-onair/30 bg-onair/10 px-3 py-2 text-sm text-danger">
       {state.error}
     </p>
   );

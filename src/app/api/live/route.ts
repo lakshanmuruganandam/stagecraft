@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { getViewer, canManageEvent } from "@/lib/auth";
-import { adminChannel, latestSeq, publicChannel, readSince, userChannel, waitForChange, type Channel } from "@/lib/live";
+import { adminChannel, globalChannel, latestSeq, publicChannel, readSince, userChannel, waitForChange, type Channel } from "@/lib/live";
 import { getEventRow } from "@/server/queries";
 import { eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
@@ -28,6 +28,7 @@ const presence = (g.__scPresence ??= new Map());
  * reconnects with Last-Event-ID and resumes exactly where it left off.
  */
 export async function GET(req: NextRequest) {
+  if (req.nextUrl.searchParams.get("scope") === "global") return globalStream(req);
   const eventId = req.nextUrl.searchParams.get("event");
   const event = eventId ? await getEventRow(eventId) : null;
   if (!event) return new Response("Unknown event", { status: 404 });
@@ -99,4 +100,50 @@ export async function GET(req: NextRequest) {
       "X-Accel-Buffering": "no",
     },
   });
+}
+
+/** Site-wide stream: admin broadcasts for everyone, plus the viewer's personal channel. */
+async function globalStream(req: NextRequest) {
+  const viewer = await getViewer();
+  const channels: Channel[] = [globalChannel];
+  if (viewer) channels.push(userChannel(viewer.id));
+  let cursor = await latestSeq();
+  const signal = req.signal;
+  const encoder = new TextEncoder();
+  const lifetime = process.env.VERCEL ? 50_000 : 10 * 60_000;
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (s: string) => {
+        try {
+          controller.enqueue(encoder.encode(s));
+        } catch {
+          /* closed */
+        }
+      };
+      send(`retry: 3000\n\n`);
+      const started = Date.now();
+      let lastBeat = Date.now();
+      try {
+        while (!signal.aborted && Date.now() - started < lifetime) {
+          for (const m of await readSince(channels, cursor)) {
+            send(`id: ${m.seq}\ndata: ${JSON.stringify({ type: m.type, payload: m.payload })}\n\n`);
+            cursor = m.seq;
+          }
+          if (Date.now() - lastBeat > 15_000) {
+            lastBeat = Date.now();
+            send(`: ping\n\n`);
+          }
+          // Broadcasts are rare: a slower poll keeps this cheap at scale.
+          await waitForChange(channels, 2500, signal);
+        }
+      } finally {
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      }
+    },
+  });
+  return new Response(stream, { headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform", Connection: "keep-alive", "X-Accel-Buffering": "no" } });
 }

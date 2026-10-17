@@ -28,7 +28,7 @@ export function AudienceSettings() {
               onClick={() => run("event.settings", { [t.key]: !t.on })}
               className={`relative h-6 w-11 shrink-0 rounded-full transition ${t.on ? "bg-spot-500" : "bg-white/12"}`}
             >
-              <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-[left] ${t.on ? "left-[22px]" : "left-0.5"}`} />
+              <span className={`absolute top-0.5 size-5 rounded-full bg-paper shadow transition-[left] ${t.on ? "left-[22px]" : "left-0.5"}`} />
             </button>
           </div>
         ))}

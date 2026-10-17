@@ -146,7 +146,7 @@ function Feedback({ state }: { state: UserActionState }) {
     );
   }
   return (
-    <p role={state.error ? "alert" : "status"} className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs ${state.error ? "bg-onair/10 text-[#ffb3b3]" : "bg-ok/10 text-[#b9f3da]"}`}>
+    <p role={state.error ? "alert" : "status"} className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs ${state.error ? "bg-onair/10 text-danger" : "bg-ok/10 text-success"}`}>
       {state.error ?? state.ok}
       <button aria-label="Dismiss" onClick={() => setDismissed(state.n ?? 0)} className="opacity-70 hover:opacity-100">
         <X size={12} />
@@ -164,7 +164,7 @@ export function RevokeSession({ userId, sessionId, current }: { userId: string; 
       <input type="hidden" name="op" value="session" />
       <input type="hidden" name="userId" value={userId} />
       <input type="hidden" name="sessionId" value={sessionId} />
-      {state?.error && <span className="text-xs text-[#ff8a8a]">{state.error}</span>}
+      {state?.error && <span className="text-xs text-danger">{state.error}</span>}
       <Button size="sm" variant="ghost" className="h-7" disabled={pending}>
         Revoke
       </Button>

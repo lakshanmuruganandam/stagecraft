@@ -41,12 +41,12 @@ export function EventForm({
   const defaultStart = event ? toIstLocal(event.startsAt) : toIstLocal(defaultStartMs ?? 0);
   const duration = event ? Math.round((event.endsAt - event.startsAt) / 60_000) : 90;
   const pts = event?.settings.points ?? { first: 50, second: 30, third: 20, participant: 2 };
-  const err = (k: string) => fe[k] && <span className="text-xs text-[#ff8a8a]">{fe[k]}</span>;
+  const err = (k: string) => fe[k] && <span className="text-xs text-danger">{fe[k]}</span>;
 
   return (
     <form action={formAction} className="grid gap-6" noValidate>
       {state?.error && (
-        <p role="alert" className="rounded-xl border border-onair/40 bg-onair/10 px-4 py-3 text-sm text-[#ffd0d0]">
+        <p role="alert" className="rounded-xl border border-onair/40 bg-onair/10 px-4 py-3 text-sm text-danger">
           {state.error}
         </p>
       )}

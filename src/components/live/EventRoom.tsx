@@ -112,7 +112,7 @@ export function EventRoom({ myCerts }: { myCerts: CertificateDTO[] }) {
               >
                 <t.icon size={16} />
                 {t.label}
-                {!!t.badge && <span className="timecode absolute right-2 top-1 rounded-full bg-spot-500 px-1.5 text-[0.6rem] font-semibold text-ink-950">{t.badge}</span>}
+                {!!t.badge && <span className="timecode absolute right-2 top-1 rounded-full bg-spot-500 px-1.5 text-[0.6rem] font-semibold text-on-spot">{t.badge}</span>}
               </button>
             ))}
           </div>

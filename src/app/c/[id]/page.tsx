@@ -10,6 +10,7 @@ import { qrDataUrl } from "@/lib/qr";
 import { Certificate } from "@/components/certs/Certificate";
 import { buttonClass } from "@/components/ui/primitives";
 import { PrintButton } from "./PrintButton";
+import { Ceremony } from "@/components/certs/Ceremony";
 
 export async function generateMetadata({ params }: PageProps<"/c/[id]">): Promise<Metadata> {
   const { id } = await params;
@@ -22,16 +23,17 @@ export async function generateMetadata({ params }: PageProps<"/c/[id]">): Promis
   };
 }
 
-export default function CertificatePage({ params }: PageProps<"/c/[id]">) {
+export default function CertificatePage({ params, searchParams }: PageProps<"/c/[id]">) {
   return (
     <Suspense fallback={<div className="mx-auto my-10 aspect-[1.414] max-w-5xl animate-pulse rounded-xl bg-white/5" />}>
-      <CertificateLoader params={params} />
+      <CertificateLoader params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function CertificateLoader({ params }: { params: PageProps<"/c/[id]">["params"] }) {
-  const { id } = await params;
+async function CertificateLoader({ params, searchParams }: Pick<PageProps<"/c/[id]">, "params" | "searchParams">) {
+  const [{ id }, sp] = await Promise.all([params, searchParams]);
+  const claim = sp.claim === "1";
   const c = await certificateById(id);
   if (!c) notFound();
   const signed = { payload: JSON.parse(c.payload), signature: c.signature };
@@ -54,7 +56,7 @@ async function CertificateLoader({ params }: { params: PageProps<"/c/[id]">["par
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12 print:p-0">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden">
-        <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm ${c.revokedAt ? "bg-onair/12 text-[#ffb3b3] ring-1 ring-onair/40" : valid ? "bg-ok/10 text-ok ring-1 ring-ok/30" : "bg-onair/12 text-[#ffb3b3]"}`}>
+        <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm ${c.revokedAt ? "bg-onair/12 text-danger ring-1 ring-onair/40" : valid ? "bg-ok/10 text-ok ring-1 ring-ok/30" : "bg-onair/12 text-danger"}`}>
           {c.revokedAt ? <ShieldAlert size={16} /> : <BadgeCheck size={16} />}
           {c.revokedAt ? `Revoked${c.revokeReason ? `: ${c.revokeReason}` : ""}` : valid ? "Authentic. Signature verified and not revoked." : "Signature check failed"}
           <Link href={`/verify/${c.id}`} className="underline underline-offset-4 opacity-80 hover:opacity-100">
@@ -76,10 +78,13 @@ async function CertificateLoader({ params }: { params: PageProps<"/c/[id]">["par
           )}
         </div>
       </div>
+      <div className={`relative ${claim ? "animate-[certin_1s_cubic-bezier(.2,.8,.2,1)_both]" : ""}`}>
+      {claim && !c.revokedAt && <Ceremony color={c.kind === "winner" ? "#ffd28a" : "#ffa928"} />}
       <Certificate
         qr={qr}
         c={{ id: c.id, recipientName: c.recipientName, houseName: c.houseName, kind: c.kind, achievement: c.achievement, eventTitle: c.eventTitle, issuedAt: c.issuedAt, revokedAt: c.revokedAt, keyId: signed.payload.issuer.keyId }}
       />
+      </div>
       <p className="mt-6 text-center text-xs text-ink-400 print:hidden">
         Issued for <Link href={`/e/${c.eventSlug}`} className="text-ink-200 underline-offset-4 hover:underline">{c.eventTitle}</Link> · signing key <span className="timecode">{signed.payload.issuer.keyId}</span> · anyone can verify this offline against <a className="underline-offset-4 hover:underline" href="/.well-known/stagecraft-issuer.json">our public key</a>.
       </p>

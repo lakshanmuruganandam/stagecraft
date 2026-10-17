@@ -11,6 +11,7 @@ export function EventCard({ event, houses, size = "md" }: { event: EventDTO; hou
   return (
     <Link
       href={`/e/${event.slug}`}
+      data-glow
       className="group relative block overflow-hidden rounded-[1.25rem] border border-white/8 bg-ink-900 transition hover:-translate-y-0.5 hover:border-white/18"
       style={{ ["--h" as string]: event.hue }}
     >

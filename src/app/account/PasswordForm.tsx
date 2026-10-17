@@ -21,7 +21,7 @@ export function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
       </Field>
       <div className="flex flex-wrap items-center gap-3 sm:col-span-3">
         <Button disabled={pending}>{pending ? "Saving…" : "Update password"}</Button>
-        {state?.error && <p role="alert" className="text-sm text-[#ff9a9a]">{state.error}</p>}
+        {state?.error && <p role="alert" className="text-sm text-danger">{state.error}</p>}
         {state?.ok && <p role="status" className="text-sm text-ok">{state.ok}</p>}
       </div>
     </form>

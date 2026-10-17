@@ -28,12 +28,12 @@ export function Toaster() {
         <div
           key={t.id}
           className={`pointer-events-auto flex max-w-md animate-rise items-center gap-3 rounded-2xl border px-4 py-3 text-sm shadow-2xl backdrop-blur-xl ${
-            t.tone === "error" ? "border-onair/40 bg-[#2a0f12]/90 text-[#ffd0d0]" : t.tone === "ok" ? "border-ok/30 bg-[#0d2a20]/90 text-[#c9f7e4]" : "border-white/10 bg-ink-800/90 text-ink-100"
+            t.tone === "error" ? "border-onair/40 bg-danger-bg text-danger" : t.tone === "ok" ? "border-ok/30 bg-success-bg text-success" : "border-white/10 bg-ink-800/90 text-ink-100"
           }`}
         >
           <span>{t.message}</span>
           {t.href && (
-            <Link href={t.href} className="shrink-0 rounded-full bg-spot-500 px-3 py-1 text-xs font-semibold text-ink-950">
+            <Link href={t.href} className="shrink-0 rounded-full bg-spot-500 px-3 py-1 text-xs font-semibold text-on-spot">
               {t.cta ?? "Open"}
             </Link>
           )}

@@ -102,7 +102,7 @@ export function LiveProvider({ snapshot, children }: { snapshot: Snapshot; child
       }
       if (ev.type === "toast") return toast(ev.payload.message);
       if (ev.type === "cert.issued") {
-        return toast(`🎓 Your certificate is ready: ${ev.payload.achievement}`, { tone: "ok", href: `/c/${ev.payload.id}`, cta: "View" });
+        return toast(`🎓 Your certificate is ready: ${ev.payload.achievement}`, { tone: "ok", href: `/c/${ev.payload.id}?claim=1`, cta: "Claim" });
       }
       dispatch({ type: "live", event: ev });
     };

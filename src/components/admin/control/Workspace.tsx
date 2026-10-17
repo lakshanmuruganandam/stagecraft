@@ -39,7 +39,7 @@ export function Workspace() {
           >
             <t.icon size={15} /> {t.label}
             {t.badge > 0 && (
-              <span className="timecode rounded-full bg-spot-500 px-1.5 text-[0.65rem] font-semibold text-ink-950" aria-label={`${t.badge} ${t.badgeLabel}`}>
+              <span className="timecode rounded-full bg-spot-500 px-1.5 text-[0.65rem] font-semibold text-on-spot" aria-label={`${t.badge} ${t.badgeLabel}`}>
                 {t.badge}
               </span>
             )}
