@@ -1,3 +1,4 @@
+import { Tilt } from "@/components/ui/Tilt";
 import Image from "next/image";
 import Link from "next/link";
 import { Crown, Users } from "lucide-react";
@@ -5,9 +6,10 @@ import type { HouseStanding } from "@/server/hub";
 
 export function HouseCard({ house, art, index }: { house: HouseStanding; art: string | null; index: number }) {
   return (
+    <Tilt className="rounded-[1.25rem]">
     <Link
       href={`/houses/${house.slug}`}
-      className="card group relative block animate-rise overflow-hidden transition duration-300 hover:-translate-y-1 hover:border-white/20 focus-visible:-translate-y-1"
+      className="card group relative block animate-rise overflow-hidden transition duration-300 hover:border-white/20"
       style={{ animationDelay: `${120 + index * 45}ms`, boxShadow: `0 0 0 0 ${house.color}00` }}
     >
       <div className="relative h-36 overflow-hidden">
@@ -40,5 +42,6 @@ export function HouseCard({ house, art, index }: { house: HouseStanding; art: st
         </p>
       </div>
     </Link>
+    </Tilt>
   );
 }

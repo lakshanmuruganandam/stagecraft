@@ -4,19 +4,22 @@ import { CalendarDays, Clock } from "lucide-react";
 import type { EventDTO, HouseDTO } from "@/lib/types";
 import { COVER, fmtDate, fmtTime, KIND_LABEL } from "@/lib/format";
 import { Badge, OnAir } from "@/components/ui/primitives";
+import { Tilt } from "@/components/ui/Tilt";
 
 export function EventCard({ event, houses, size = "md" }: { event: EventDTO; houses: HouseDTO[]; size?: "md" | "lg" }) {
   const hosts = event.hostHouseIds.map((id) => houses.find((h) => h.id === id)).filter(Boolean) as HouseDTO[];
   const live = event.status === "live";
+  const notch = size === "lg" ? "13rem" : "8rem";
   return (
+    <Tilt foil={live} className="rounded-[1.25rem]">
     <Link
       href={`/e/${event.slug}`}
       data-glow
-      className="group relative block overflow-hidden rounded-[1.25rem] border border-white/8 bg-ink-900 transition hover:-translate-y-0.5 hover:border-white/18"
-      style={{ ["--h" as string]: event.hue }}
+      className="pass-notch group relative block overflow-hidden rounded-[1.25rem] border border-white/8 bg-ink-900"
+      style={{ ["--h" as string]: event.hue, ["--notch" as string]: notch }}
     >
       {/* Stage: a lit backdrop in the event's hue */}
-      <div className={`relative overflow-hidden ${size === "lg" ? "h-44 sm:h-52" : "h-32"}`}>
+      <div data-theme="stage" className={`relative overflow-hidden ${size === "lg" ? "h-52" : "h-32"}`}>
         <Image src={COVER[event.kind]} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover opacity-80 transition duration-700 group-hover:scale-[1.04] group-hover:opacity-100" />
         <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, hsl(${event.hue} 70% 30% / .35), transparent 40%, #0d0d12 100%)` }} />
         <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
@@ -45,7 +48,13 @@ export function EventCard({ event, houses, size = "md" }: { event: EventDTO; hou
           </span>
           <span>{hosts.map((h) => h.name).slice(0, 3).join(" × ")}{hosts.length > 3 ? " …" : ""}</span>
         </div>
+        {/* Stub: admit-one barcode */}
+        <div aria-hidden className="mt-3 flex items-center justify-between border-t border-white/8 pt-2.5 font-mono text-[0.58rem] uppercase tracking-[0.22em] text-ink-400">
+          <span>Admit one · {event.slug.slice(0, 10)}</span>
+          <span className="h-4 w-20 bg-[repeating-linear-gradient(90deg,currentColor_0_1px,transparent_1px_3px,currentColor_3px_5px,transparent_5px_6px)] opacity-60" />
+        </div>
       </div>
     </Link>
+    </Tilt>
   );
 }

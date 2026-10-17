@@ -408,3 +408,32 @@ body:has(.stage-root.transparent) {
 @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
 .spot-blink { transform-box: fill-box; transform-origin: center; animation: blink 5s infinite; }
 @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+
+/* ───────────── 3D stage-pass tilt (components/ui/Tilt.tsx) ───────────── */
+.tilt-body {
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(calc(var(--lift, 0) * 14px));
+  transition: box-shadow 0.3s;
+  border-radius: inherit;
+}
+.tilt-lift { filter: drop-shadow(0 calc(10px + var(--lift, 0) * 22px) calc(18px + var(--lift, 0) * 24px) rgb(60 35 5 / calc(0.10 + var(--lift, 0) * 0.16))); }
+.tilt-glare {
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgb(255 255 255 / calc(var(--lift, 0) * 0.45)), transparent 55%);
+  mix-blend-mode: soft-light;
+}
+.tilt-foil {
+  background:
+    linear-gradient(115deg, transparent 20%, rgb(255 120 180 / 0.35) 36%, rgb(255 230 120 / 0.35) 44%, rgb(120 230 255 / 0.35) 52%, rgb(170 140 255 / 0.32) 60%, transparent 76%);
+  background-size: 260% 260%;
+  background-position: var(--gx, 50%) var(--gy, 50%);
+  mix-blend-mode: color-dodge;
+  opacity: calc(var(--lift, 0) * 0.55);
+}
+/* Die-cut ticket notches where the photo meets the stub. */
+.pass-notch {
+  --n: 9px;
+  mask-image:
+    radial-gradient(circle var(--n) at 0 var(--notch, 70%), transparent 98%, #000 100%),
+    radial-gradient(circle var(--n) at 100% var(--notch, 70%), transparent 98%, #000 100%);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+}

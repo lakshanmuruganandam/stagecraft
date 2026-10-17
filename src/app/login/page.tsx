@@ -6,6 +6,7 @@ import { DEMO_EMAILS } from "@/lib/demo";
 import { Logo } from "@/components/site/Logo";
 import { AuthForms } from "./AuthForms";
 import { Showcase } from "./Showcase";
+import { Tilt } from "@/components/ui/Tilt";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -16,6 +17,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
       <div className="flex items-center justify-center">
         {/* The sign-in form is a theatre ticket: you're taking your seat. */}
         <div className="relative w-full max-w-md animate-rise">
+          <Tilt max={5} foil className="rounded-[1.25rem]">
           <div className="card relative overflow-hidden p-7 sm:p-8">
             <div className="flex items-start justify-between">
               <Logo size={36} />
@@ -31,6 +33,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
               <FormLoader searchParams={searchParams} />
             </Suspense>
           </div>
+          </Tilt>
           {/* Perforated stub */}
           <div aria-hidden className="relative mx-6 -mt-px flex items-center justify-between rounded-b-2xl border border-t-0 border-dashed border-white/15 bg-ink-850/70 px-5 py-3 font-mono text-[0.62rem] uppercase tracking-[0.2em] text-ink-400">
             <span>StageCraft · IITM BS houses</span>
