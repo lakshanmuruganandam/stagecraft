@@ -16,7 +16,8 @@ type Holder = { client: Client; db: DB; ready: Promise<DB> };
 const g = globalThis as unknown as { __stagecraft?: Holder };
 
 function resolveUrl() {
-  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+  const remote = process.env.DATABASE_URL ?? process.env.TURSO_DATABASE_URL;
+  if (remote) return remote;
   // Serverless file systems are read-only except /tmp. Fine for a demo,
   // but use Turso (DATABASE_URL) for anything real.
   const dir = process.env.VERCEL ? "/tmp" : path.join(process.cwd(), ".data");
@@ -26,7 +27,7 @@ function resolveUrl() {
 
 function init(): Holder {
   const url = resolveUrl();
-  const client = createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN });
+  const client = createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN ?? process.env.TURSO_AUTH_TOKEN });
   const db = drizzle(client, { schema });
 
   const ready = (async () => {
