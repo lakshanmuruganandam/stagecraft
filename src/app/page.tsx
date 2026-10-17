@@ -53,7 +53,7 @@ function Hero() {
             Open the control room <ArrowRight size={16} />
           </Link>
         </div>
-        <Suspense fallback={<div className="mt-12 h-16" />}>
+        <Suspense fallback={<div className="mt-12 h-[106px] max-w-[600px] rounded-[1.25rem]" />}>
           <HeroStats />
         </Suspense>
       </div>

@@ -187,7 +187,12 @@ public/covers/ public/houses/   Stage and house art (generated with Gemini via t
    - `DATABASE_URL`, `DATABASE_AUTH_TOKEN`
    - `NEXT_PUBLIC_SITE_URL`: the production URL (used in QR codes and LinkedIn links)
    - `STAGECRAFT_DEMO=off` for a real house (hides personas, enforces IITM emails), or leave it on for judging
-3. Deploy. Migrations run on first request, and demo mode seeds an empty database.
+3. Migrate and seed the remote database once, from your machine (and again after adding migrations):
+   ```bash
+   DATABASE_URL=… DATABASE_AUTH_TOKEN=… STAGECRAFT_SECRET=… npx tsx --tsconfig tsconfig.json scripts/db-init.ts   # add --reset to reseed demo data
+   ```
+   Remote databases are never migrated inside a request; local `.data/` databases set themselves up automatically.
+4. Deploy.
 
 ### Docker (one long-lived Node process, ideal for SSE)
 ```bash
