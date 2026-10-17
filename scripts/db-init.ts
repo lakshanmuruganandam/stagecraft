@@ -5,6 +5,7 @@
  * --reset wipes and reseeds (use the same STAGECRAFT_SECRET as production so
  * seeded certificates verify).
  */
+process.env.STAGECRAFT_MIGRATE = "runtime"; // this script is the one place remote DBs are migrated
 import { getDb } from "../src/db";
 
 async function main() {

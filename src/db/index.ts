@@ -30,12 +30,18 @@ function init(): Holder {
   const client = createClient({ url, authToken: process.env.DATABASE_AUTH_TOKEN ?? process.env.TURSO_AUTH_TOKEN });
   const db = drizzle(client, { schema });
 
+  const local = url.startsWith("file:");
   const ready = (async () => {
-    if (url.startsWith("file:")) {
+    if (local) {
       await client.execute("PRAGMA journal_mode = WAL");
       await client.execute("PRAGMA busy_timeout = 15000");
       await client.execute("PRAGMA foreign_keys = ON");
     }
+    // Remote databases are migrated and seeded ahead of deploys
+    // (scripts/db-init.ts), never inside a request: request-scoped fetch can
+    // be cancelled by prerendering, and setup work doesn't belong on the hot path.
+    // Local file databases set themselves up for zero-config development.
+    if (!local && process.env.STAGECRAFT_MIGRATE !== "runtime") return db;
     await migrate(db, { migrationsFolder: path.join(process.cwd(), "drizzle") });
     const { seedIfEmpty, seedHousesIfEmpty } = await import("./seed");
     // Demo data (and its public demo password) only ever exists in demo mode.
@@ -59,7 +65,14 @@ export async function getDb(): Promise<DB> {
     /* not inside a request (scripts, build-time tooling) */
   }
   g.__stagecraft ??= init();
-  return g.__stagecraft.ready;
+  const holder = g.__stagecraft;
+  try {
+    return await holder.ready;
+  } catch (e) {
+    // Never cache a failed setup: the next request gets a fresh attempt.
+    if (g.__stagecraft === holder) g.__stagecraft = undefined;
+    throw e;
+  }
 }
 
 export { schema };
