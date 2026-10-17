@@ -1,26 +1,150 @@
 @import "tailwindcss";
+@source "../";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui;
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-ink-950: #07070a;
+  --color-ink-900: #0d0d12;
+  --color-ink-850: #121219;
+  --color-ink-800: #181822;
+  --color-ink-700: #23232f;
+  --color-ink-600: #33333f;
+  --color-ink-500: #4a4a58;
+  --color-ink-400: #737385;
+  --color-ink-300: #a3a3b4;
+  --color-ink-200: #cfcfdb;
+  --color-ink-100: #ececf3;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-spot-300: #ffd28a;
+  --color-spot-400: #ffbf5c;
+  --color-spot-500: #ffa928;
+  --color-spot-600: #e08a00;
+
+  --color-onair: #ff3b3b;
+  --color-ok: #3ddc97;
+  --color-warn: #ffcc4d;
+
+  --radius-card: 1.1rem;
+  --animate-rise: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-floatup: floatup 2.6s ease-out forwards;
+  --animate-tally: tally 1.6s ease-in-out infinite;
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes floatup {
+    0% { opacity: 0; transform: translateY(0) scale(0.6); }
+    10% { opacity: 1; transform: translateY(-20px) scale(1.15); }
+    100% { opacity: 0; transform: translateY(-340px) translateX(var(--drift, 0px)) scale(1); }
+  }
+  @keyframes tally {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgb(255 59 59 / 0.55); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 6px rgb(255 59 59 / 0); }
   }
 }
 
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background: var(--color-ink-950);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgb(255 169 40 / 0.07), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgb(120 90 255 / 0.05), transparent 60%),
+    var(--color-ink-950);
+  color: var(--color-ink-100);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Film-grain texture so flat darks don't band. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-spot-400);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: rgb(255 169 40 / 0.35);
+}
+
+@utility card {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.015));
+  border: 1px solid rgb(255 255 255 / 0.07);
+  border-radius: var(--radius-card);
+}
+
+@utility timecode {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-300);
+}
+
+/* Ticket stub perforation used on event cards. */
+@utility perforated {
+  mask-image: radial-gradient(circle 9px at 0 50%, transparent 98%, #000 100%), radial-gradient(circle 9px at 100% 50%, transparent 98%, #000 100%);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-600) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media print {
+  @page { size: A4 landscape; margin: 0; }
+  header, footer, body::before { display: none !important; }
+  html, body { background: #fff !important; }
+}
+
+/* Stage overlay (OBS browser source): hide site chrome, optionally go transparent. */
+body:has(.stage-root) > header {
+  display: none;
+}
+body:has(.stage-root) > footer {
+  display: none;
+}
+body:has(.stage-root)::before {
+  display: none;
+}
+html:has(.stage-root.transparent) {
+  background: transparent !important;
+}
+body:has(.stage-root.transparent) {
+  background: transparent !important;
 }
