@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist_Mono, Instrument_Sans } from "next/font/google";
 import { Header } from "@/components/site/Header";
@@ -41,6 +42,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         <footer className="border-t border-white/6 py-8 text-center text-xs text-ink-400">
           StageCraft — built for Build-a-Thon 1.0 · Theme 03 · Code Crafters × the houses of IITM BS
+          {" · "}
+          <Link href="/pitch" className="underline decoration-white/20 underline-offset-4 hover:text-spot-400">
+            Jury deck
+          </Link>
         </footer>
         <Toaster />
         <GlobalBroadcast />
