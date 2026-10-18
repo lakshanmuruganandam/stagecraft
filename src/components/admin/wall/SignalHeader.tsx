@@ -21,8 +21,7 @@ export function SignalHeader({ status, count, id }: { status: EventStatus; count
           {s.label}
         </span>
         <span className="eyebrow rounded-full bg-ink-900/75 px-2.5 py-1 backdrop-blur-sm">
-          <span aria-hidden>— </span>
-          <span className="sr-only">: </span>
+          <span className="sr-only">, </span>
           {s.note(count)}
         </span>
       </h2>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -11,6 +11,8 @@ const isActive = (path: string, href: string) => (href === "/" ? path === "/" ||
 export function NavLinks({ isManager }: { isManager: boolean }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
   const links = [
     { href: "/", label: "Events", icon: Home, hint: "Live now and coming up" },
     { href: "/houses", label: "Houses", icon: Users, hint: "Every house's home" },
@@ -26,6 +28,11 @@ export function NavLinks({ isManager }: { isManager: boolean }) {
     const t = setTimeout(() => setOpen(false), 0);
     return () => clearTimeout(t);
   }, [path]);
+  // Return focus to the menu button when the sheet closes.
+  useEffect(() => {
+    if (wasOpen.current && !open) trigger.current?.focus();
+    wasOpen.current = open;
+  }, [open]);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -54,7 +61,7 @@ export function NavLinks({ isManager }: { isManager: boolean }) {
       </nav>
 
       {/* Mobile */}
-      <button onClick={() => setOpen(true)} aria-label="Open menu" aria-expanded={open} aria-controls="mobile-menu" className="order-last grid size-9 shrink-0 place-items-center rounded-full border border-white/10 text-ink-200 md:hidden">
+      <button ref={trigger} onClick={() => setOpen(true)} aria-label="Open menu" aria-expanded={open} aria-controls="mobile-menu" className="order-last grid size-9 shrink-0 place-items-center rounded-full border border-white/10 text-ink-200 md:hidden">
         <Menu size={17} />
       </button>
       {open && (

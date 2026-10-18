@@ -253,6 +253,7 @@ export const commands = {
         }
       }
       await ctx.db.update(s.events).set({ spotlightQuestionId: questionId, stageScene: questionId ? "question" : ctx.event.stageScene }).where(eq(s.events.id, ctx.event.id));
+      await audit(ctx, questionId ? "qa.spotlight" : "qa.unspotlight", questionId ?? undefined);
       return pushEvent(ctx);
     },
   }),
@@ -518,6 +519,7 @@ export const commands = {
     schema: z.object({ scene: z.enum(["auto", "question", "poll", "bracket", "contest", "lower-third", "blank"]) }),
     async run(ctx, { scene }) {
       await ctx.db.update(s.events).set({ stageScene: scene }).where(eq(s.events.id, ctx.event.id));
+      await audit(ctx, "event.scene", scene);
       return pushEvent(ctx);
     },
   }),

@@ -158,7 +158,7 @@ function MatchCard({ match: m, bracket, connector }: { match: BMatch; bracket: B
       {connector && <span aria-hidden className="absolute -right-6 top-1/2 h-px w-6 bg-white/12" />}
       {m.status === "ready" && totalPicks > 0 && (
         <Badge className="absolute -top-2 right-2" tone="muted">
-          {totalPicks} picks
+          {totalPicks} {totalPicks === 1 ? "pick" : "picks"}
         </Badge>
       )}
     </div>

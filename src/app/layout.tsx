@@ -40,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main id="main" className="flex-1">
           {children}
         </main>
-        <footer className="border-t border-white/6 py-8 text-center text-xs text-ink-400">
+        <footer className="border-t border-white/6 px-4 py-8 text-center text-xs text-ink-400">
           StageCraft — built for Build-a-Thon 1.0 · Theme 03 · Code Crafters × the houses of IITM BS
           {" · "}
           <Link href="/pitch" className="underline decoration-white/20 underline-offset-4 hover:text-spot-400">
