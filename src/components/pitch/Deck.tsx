@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 
 export type DeckSlide = {
@@ -16,7 +16,7 @@ export type DeckSlide = {
  * Deck chrome is scoped to `.pitch-root` so the rest of the site is untouched.
  * :has() hides the site header, footer and scenery while the deck is mounted.
  */
-const css = `
+const css = /* css */ `
 body:has(.pitch-root) > header,
 body:has(.pitch-root) > footer,
 body:has(.pitch-root) > .scroll-beam,
@@ -28,29 +28,62 @@ html:has(.pitch-root), body:has(.pitch-root) { overflow: hidden; }
 .pitch-slide {
   position: absolute;
   inset: 0;
+  z-index: 2;
   overflow-y: auto;
   overscroll-behavior: contain;
-  transition: opacity 600ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0s;
+  clip-path: inset(0 0 0 0 round 0);
+  transition: clip-path 900ms cubic-bezier(0.76, 0, 0.24, 1), transform 900ms cubic-bezier(0.76, 0, 0.24, 1), opacity 500ms ease, visibility 0s linear 0s;
 }
-.pitch-slide[data-state="before"],
-.pitch-slide[data-state="after"] {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 500ms ease, transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 700ms;
-}
-.pitch-slide[data-state="before"] { transform: translateX(-6%) scale(0.98); }
-.pitch-slide[data-state="after"] { transform: translateX(6%) scale(0.98); }
-.pitch-slide[data-state="current"] .pitch-rise > * { animation: pitch-rise 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-.pitch-slide[data-state="current"] .pitch-rise > :nth-child(2) { animation-delay: 80ms; }
-.pitch-slide[data-state="current"] .pitch-rise > :nth-child(3) { animation-delay: 160ms; }
-.pitch-slide[data-state="current"] .pitch-rise > :nth-child(4) { animation-delay: 240ms; }
-.pitch-slide[data-state="current"] .pitch-rise > :nth-child(n + 5) { animation-delay: 320ms; }
-@keyframes pitch-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+/* Upcoming slides wait below and wipe up over the current one; past slides sink back like a stacked card. */
+.pitch-slide[data-state="after"] { clip-path: inset(100% 0 0 0 round 48px 48px 0 0); z-index: 3; visibility: hidden; pointer-events: none;
+  transition: clip-path 900ms cubic-bezier(0.76, 0, 0.24, 1), visibility 0s linear 900ms; }
+.pitch-slide[data-state="before"] { transform: scale(0.92) translateY(-4%); opacity: 0; z-index: 1; visibility: hidden; pointer-events: none;
+  transition: transform 900ms cubic-bezier(0.76, 0, 0.24, 1), opacity 700ms ease 200ms, visibility 0s linear 900ms; }
+/* Going backwards: the past slide is now the one returning, so let it wipe down from the top instead. */
+.pitch-root[data-dir="back"] .pitch-slide[data-state="current"] { z-index: 3; }
+.pitch-root[data-dir="back"] .pitch-slide[data-state="after"] { clip-path: inset(0 0 0 0); transform: scale(0.92) translateY(4%); opacity: 0; z-index: 1;
+  transition: transform 900ms cubic-bezier(0.76, 0, 0.24, 1), opacity 700ms ease 200ms, visibility 0s linear 900ms; }
+.pitch-root[data-dir="back"] .pitch-slide[data-state="before"] { clip-path: inset(0 0 100% 0 round 0 0 48px 48px); transform: none; opacity: 1; }
+.pitch-root[data-dir="back"] .pitch-slide[data-state="current"] { animation: pitch-wipe-down 900ms cubic-bezier(0.76, 0, 0.24, 1) both; }
+@keyframes pitch-wipe-down { from { clip-path: inset(0 0 100% 0 round 0 0 48px 48px); } to { clip-path: inset(0 0 0 0 round 0); } }
+
+/* Staggered reveals: the heading block, then every card, figure and chip inside it. */
+.pitch-slide[data-state="current"] .pitch-rise > * { animation: pitch-rise 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: 380ms; }
+.pitch-slide[data-state="current"] .pitch-rise > :nth-child(2) { animation-delay: 480ms; }
+.pitch-slide[data-state="current"] .pitch-rise > :nth-child(3) { animation-delay: 580ms; }
+.pitch-slide[data-state="current"] .pitch-rise > :nth-child(n + 4) { animation-delay: 680ms; }
+.pitch-slide[data-state="current"] .pitch-rise .grid > *,
+.pitch-slide[data-state="current"] .pitch-rise .flex-wrap > * { animation: pitch-pop 700ms cubic-bezier(0.2, 0.9, 0.25, 1.15) both; animation-delay: calc(520ms + var(--i, 0) * 55ms); }
+${Array.from({ length: 14 }, (_, i) => `.pitch-rise .grid > :nth-child(${i + 1}), .pitch-rise .flex-wrap > :nth-child(${i + 1}) { --i: ${i}; }`).join("\n")}
+.pitch-slide[data-state="current"] h2 { animation: pitch-title 1000ms cubic-bezier(0.2, 0.8, 0.2, 1) 420ms both; }
+@keyframes pitch-rise { from { opacity: 0; transform: translateY(34px); } to { opacity: 1; transform: none; } }
+@keyframes pitch-pop { from { opacity: 0; transform: translateY(26px) scale(0.94); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes pitch-title { from { opacity: 0; transform: translateY(0.4em); clip-path: inset(0 0 100% 0); } to { opacity: 1; transform: none; clip-path: inset(0 0 -20% 0); } }
+
+/* Living backdrop: drifting light pools, a dot grid and a giant outlined slide number. */
+.pitch-decor { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.pitch-orb { position: absolute; width: 46vmax; height: 46vmax; border-radius: 50%; filter: blur(10px); opacity: 0.55; will-change: transform; }
+.pitch-slide[data-state="current"] .pitch-orb { animation: pitch-drift 18s ease-in-out infinite alternate; }
+.pitch-slide[data-state="current"] .pitch-orb + .pitch-orb { animation-duration: 23s; animation-direction: alternate-reverse; }
+@keyframes pitch-drift { 0% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(6vmax, -4vmax, 0) scale(1.12); } 100% { transform: translate3d(-5vmax, 3vmax, 0) scale(0.94); } }
+.pitch-grid { position: absolute; inset: 0; background-image: radial-gradient(currentColor 1px, transparent 1.4px); background-size: 28px 28px; color: rgb(120 80 20 / 0.13);
+  mask-image: radial-gradient(70% 60% at 70% 30%, #000, transparent 75%); }
+[data-theme="stage"] .pitch-grid { color: rgb(255 210 140 / 0.10); }
+.pitch-spot { position: absolute; inset: 0; background: radial-gradient(520px circle at var(--mx, 70%) var(--my, 20%), rgb(255 190 90 / 0.16), transparent 60%); }
+.pitch-num { position: absolute; right: -0.04em; bottom: -0.2em; font-family: var(--font-display); font-weight: 700; font-size: clamp(14rem, 34vw, 30rem); line-height: 1;
+  letter-spacing: -0.06em; color: transparent; -webkit-text-stroke: 2px rgb(200 120 20 / 0.16); }
+[data-theme="stage"] .pitch-num { -webkit-text-stroke-color: rgb(255 190 90 / 0.14); }
+.pitch-slide[data-state="current"] .pitch-num { animation: pitch-num 1400ms cubic-bezier(0.2, 0.8, 0.2, 1) 200ms both; }
+@keyframes pitch-num { from { opacity: 0; transform: translateX(12%) rotate(4deg); } to { opacity: 1; transform: none; } }
+
+/* Scroll hint on the title slide. */
+.pitch-mouse { width: 22px; height: 34px; border: 2px solid currentColor; border-radius: 12px; position: relative; }
+.pitch-mouse::after { content: ""; position: absolute; left: 50%; top: 6px; width: 3px; height: 7px; margin-left: -1.5px; border-radius: 2px; background: currentColor; animation: pitch-wheel 1.6s ease-in-out infinite; }
+@keyframes pitch-wheel { 0% { opacity: 0; transform: translateY(-3px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(9px); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .pitch-slide, .pitch-slide[data-state] { transition: none !important; transform: none !important; }
-  .pitch-slide .pitch-rise > * { animation: none !important; }
+  .pitch-slide, .pitch-slide[data-state] { transition: none !important; transform: none !important; animation: none !important; }
+  .pitch-slide *, .pitch-mouse::after { animation: none !important; }
 }
 
 @media print {
@@ -71,7 +104,9 @@ html:has(.pitch-root), body:has(.pitch-root) { overflow: hidden; }
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .pitch-slide .pitch-rise > * { animation: none !important; }
+  .pitch-slide, .pitch-slide[data-state] { clip-path: none !important; animation: none !important; }
+  .pitch-slide * { animation: none !important; }
+  .pitch-spot { display: none !important; }
   .pitch-chrome { display: none !important; }
 }
 `;
@@ -94,6 +129,18 @@ export function Deck({ slides }: { slides: DeckSlide[] }) {
     () => 0,
   );
   const touch = useRef<{ x: number; y: number } | null>(null);
+  const root = useRef<HTMLDivElement>(null);
+  const prev = useRef(index);
+  const [dir, setDir] = useState<"fwd" | "back">("fwd");
+
+  // Remember travel direction so the wipe runs the right way.
+  useEffect(() => {
+    if (index === prev.current) return;
+    const d = index > prev.current ? "fwd" : "back";
+    prev.current = index;
+    const t = setTimeout(() => setDir(d), 0);
+    return () => clearTimeout(t);
+  }, [index]);
 
   const go = useCallback(
     (next: number) => {
@@ -119,6 +166,7 @@ export function Deck({ slides }: { slides: DeckSlide[] }) {
       const cur = indexFromHash(total);
       switch (e.key) {
         case "ArrowRight":
+        case "ArrowDown":
         case "PageDown":
           e.preventDefault();
           go(cur + 1);
@@ -129,6 +177,7 @@ export function Deck({ slides }: { slides: DeckSlide[] }) {
           go(e.shiftKey ? cur - 1 : cur + 1);
           break;
         case "ArrowLeft":
+        case "ArrowUp":
         case "PageUp":
           e.preventDefault();
           go(cur - 1);
@@ -152,11 +201,59 @@ export function Deck({ slides }: { slides: DeckSlide[] }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [go, total, toggleFullscreen]);
 
+  // Wheel / trackpad: scroll inside a tall slide first, then step one slide per gesture.
+  // Trackpad inertia keeps firing for a second or more, so a step locks until the stream goes quiet.
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    let acc = 0, last = 0, stepAt = 0, locked = false;
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) return; // pinch-zoom
+      const dy = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      if (!dy) return;
+      const now = performance.now();
+      const gap = now - last;
+      last = now;
+      const cur = indexFromHash(total);
+      const slide = document.getElementById(`slide-${cur + 1}`);
+      if (!locked && slide) {
+        const room = dy > 0 ? slide.scrollHeight - slide.clientHeight - slide.scrollTop : slide.scrollTop;
+        if (room > 2 && Math.abs(e.deltaY) >= Math.abs(e.deltaX)) return;
+      }
+      e.preventDefault();
+      if (locked) {
+        if ((now - stepAt > 700 && gap > 160) || now - stepAt > 1600) locked = false;
+        else return;
+      }
+      if (gap > 250) acc = 0;
+      acc += dy;
+      if (Math.abs(acc) < 40) return;
+      const next = cur + (acc > 0 ? 1 : -1);
+      acc = 0;
+      if (next < 0 || next >= total) return;
+      locked = true;
+      stepAt = now;
+      go(next);
+    };
+    const onMove = (e: PointerEvent) => {
+      el.style.setProperty("--mx", `${e.clientX}px`);
+      el.style.setProperty("--my", `${e.clientY}px`);
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("pointermove", onMove);
+    };
+  }, [go, total]);
+
   const current = slides[index];
   const progress = ((index + 1) / total) * 100;
 
   return (
     <div
+      ref={root}
+      data-dir={dir}
       className="pitch-root fixed inset-0 z-[45] bg-ink-950 text-ink-100"
       data-lenis-prevent
       aria-roledescription="carousel"
@@ -187,25 +284,38 @@ export function Deck({ slides }: { slides: DeckSlide[] }) {
             aria-hidden={i !== index}
             inert={i !== index}
             data-state={i < index ? "before" : i > index ? "after" : "current"}
-            data-theme={s.stage ? "stage" : undefined}
             className="pitch-slide scrollbar-thin bg-ink-950 text-ink-100"
           >
-            {s.stage ? (
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
+            <div aria-hidden className="pitch-decor">
+              {s.stage && (
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      "radial-gradient(60% 55% at 50% -10%, rgb(255 169 40 / 0.30), transparent 70%), radial-gradient(40% 40% at 90% 110%, rgb(255 120 90 / 0.18), transparent 70%)",
+                  }}
+                />
+              )}
+              <span
+                className="pitch-orb"
                 style={{
-                  background:
-                    "radial-gradient(60% 55% at 50% -10%, rgb(255 169 40 / 0.22), transparent 70%), radial-gradient(40% 40% at 90% 110%, rgb(255 169 40 / 0.10), transparent 70%)",
+                  left: `${[62, -12, 48, 70, -8, 55, 20, 66, -10, 58, 30, 64, 40][i % 13]}%`,
+                  top: `${[-30, -20, 40, -35, 30, -25, -40, 25, -30, 35, -28, 20, -20][i % 13]}%`,
+                  background: `radial-gradient(closest-side, ${["rgb(255 176 60 / .45)", "rgb(255 140 160 / .35)", "rgb(120 196 255 / .35)"][i % 3]}, transparent)`,
                 }}
               />
-            ) : (
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{ background: "radial-gradient(55% 45% at 100% 0%, var(--glow), transparent 70%)" }}
+              <span
+                className="pitch-orb"
+                style={{
+                  left: `${[-15, 60, -10, 10, 65, -18, 58, 0, 62, -12, 55, -5, 60][i % 13]}%`,
+                  top: `${[45, 50, -30, 55, 45, 50, 40, -35, 55, -25, 50, 55, 45][i % 13]}%`,
+                  background: `radial-gradient(closest-side, ${["rgb(120 210 170 / .30)", "rgb(255 190 90 / .40)", "rgb(255 150 120 / .32)"][i % 3]}, transparent)`,
+                }}
               />
-            )}
+              <div className="pitch-grid" />
+              <div className="pitch-spot" />
+              <span className="pitch-num">{String(i + 1).padStart(2, "0")}</span>
+            </div>
             <div className="relative mx-auto flex min-h-full w-full max-w-[88rem] flex-col px-5 pb-24 pt-8 sm:px-10 sm:pt-10 lg:px-16">
               {s.rubric && (
                 <div className="mb-4 flex sm:mb-6">
@@ -222,9 +332,9 @@ export function Deck({ slides }: { slides: DeckSlide[] }) {
       </div>
 
       {/* Chrome: progress, counter, controls */}
-      <div className="pitch-chrome" data-theme={current?.stage ? "stage" : undefined}>
+      <div className="pitch-chrome">
         <div className="fixed inset-x-0 top-0 z-10 h-1 bg-white/8" aria-hidden>
-          <div className="h-full bg-spot-500 transition-[width] duration-500 motion-reduce:transition-none" style={{ width: `${progress}%` }} />
+          <div className="h-full bg-[linear-gradient(90deg,#ffb347,var(--color-spot-500),#ff7a59)] shadow-[0_0_12px_rgb(255_160_40/0.7)] transition-[width] duration-700 motion-reduce:transition-none" style={{ width: `${progress}%` }} />
         </div>
         <nav
           aria-label="Slide controls"
@@ -260,6 +370,32 @@ export function Deck({ slides }: { slides: DeckSlide[] }) {
             <Maximize2 className="size-4" aria-hidden />
           </button>
         </nav>
+        <nav aria-label="Slides" className="fixed right-3 top-1/2 z-10 hidden -translate-y-1/2 flex-col gap-1 lg:flex">
+          {slides.map((s, i) => (
+            <button
+              key={s.title}
+              type="button"
+              onClick={() => go(i)}
+              aria-label={`Go to slide ${i + 1}: ${s.title}`}
+              aria-current={i === index ? "step" : undefined}
+              className="group relative flex h-5 items-center justify-end"
+            >
+              <span className="pointer-events-none absolute right-6 whitespace-nowrap rounded-full border border-white/10 bg-ink-900/90 px-2.5 py-1 text-xs text-ink-100 opacity-0 shadow-lg backdrop-blur transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                {s.title}
+              </span>
+              <span
+                className={`block h-1.5 rounded-full transition-all duration-500 ${i === index ? "w-6 bg-spot-500" : "w-1.5 bg-ink-400/50 group-hover:w-3 group-hover:bg-ink-200"}`}
+              />
+            </button>
+          ))}
+        </nav>
+        <div
+          aria-hidden
+          className={`fixed bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-full border border-white/10 bg-ink-900/70 px-4 py-2 text-xs text-ink-200 backdrop-blur-md transition duration-700 ${index === 0 ? "opacity-100" : "pointer-events-none translate-y-4 opacity-0"}`}
+        >
+          <span className="pitch-mouse text-spot-400" />
+          Scroll, swipe or use the arrow keys
+        </div>
         <p className="sr-only" aria-live="polite" aria-atomic="true">
           {current ? `Slide ${index + 1} of ${total}: ${current.title}` : ""}
         </p>

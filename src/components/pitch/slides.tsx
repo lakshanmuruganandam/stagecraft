@@ -179,7 +179,7 @@ export function buildSlides(media: MediaAvailability): DeckSlide[] {
               ))}
             </ul>
             <p className="mt-4 text-xs text-ink-400">Demo mode: the avatar menu switches personas instantly.</p>
-            <p className="mt-3 hidden font-mono text-[0.65rem] uppercase tracking-[0.18em] text-ink-300 sm:block">← → / space to navigate · F fullscreen</p>
+            <p className="mt-3 hidden font-mono text-[0.65rem] uppercase tracking-[0.18em] text-ink-300 sm:block">Scroll · ← → · space to navigate · F fullscreen</p>
           </div>
         </div>
       ),
