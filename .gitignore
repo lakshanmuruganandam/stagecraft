@@ -46,5 +46,5 @@ next-env.d.ts
 
 /.lighthouse
 
-# large media served by the deployment, not stored in git
-/public/media/*.mp4
+
+

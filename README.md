@@ -10,6 +10,18 @@
 ![Next.js 16](https://img.shields.io/badge/Next.js-16%20App%20Router-000)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
+## Pitch videos and slides
+
+| 1 · Launch film (1:18) | 2 · Technical pitch (2:58) |
+|---|---|
+| [![StageCraft launch film](public/media/launch-poster.jpg)](https://stagecraft-xi.vercel.app/media/StageCraft-Launch.mp4) | [![StageCraft technical pitch](public/media/technical-poster.jpg)](https://stagecraft-xi.vercel.app/media/StageCraft-Technical-Pitch.mp4) |
+| The product story, from a member's seat to the wrap-up. **[▶ Watch](https://stagecraft-xi.vercel.app/media/StageCraft-Launch.mp4)** · [file in repo](public/media/StageCraft-Launch.mp4) | Architecture, realtime pipeline, security and admin workflows, walked through against the judging rubric. **[▶ Watch](https://stagecraft-xi.vercel.app/media/StageCraft-Technical-Pitch.mp4)** · [file in repo](public/media/StageCraft-Technical-Pitch.mp4) |
+
+**3 · Slides:** [interactive jury deck](https://stagecraft-xi.vercel.app/pitch) (scroll, swipe or use the arrow keys; press F for fullscreen) · [PDF, 13 pages](docs/StageCraft-Jury-Deck.pdf)
+
+**Demo logins:** see [CREDENTIALS.md](CREDENTIALS.md).
+
+
 ![StageCraft home: living forest sky, live 3D product scene](docs/screenshots/home.png)
 
 | | |
@@ -52,6 +64,8 @@ Then:
 1. Open **Stage view** on any event. It's an OBS browser source; add `?transparent=1` to key it over video.
 2. As the member, open **Credentials**, then a certificate. Download the **Signed JSON** and drop it on **/verify**. Edit one character and verify again.
 3. As the member, open **Account**: change your password and watch your other sessions get signed out.
+
+> **All demo accounts, roles and the password are listed in [CREDENTIALS.md](CREDENTIALS.md). Open it next.**
 
 ---
 
@@ -197,7 +211,7 @@ public/covers/ public/houses/   Stage and house art (generated with Gemini via t
 1. `turso db create stagecraft`, then copy the URL and create a token.
 2. Import the repo into Vercel and set:
    - `STAGECRAFT_SECRET`: `openssl rand -base64 48`
-   - `DATABASE_URL`, `DATABASE_AUTH_TOKEN`
+   - `DATABASE_URL`, `DATABASE_AUTH_TOKEN` (or link the Turso integration from the Vercel Marketplace, which sets `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN`; both names work)
    - `NEXT_PUBLIC_SITE_URL`: the production URL (used in QR codes and LinkedIn links)
    - `STAGECRAFT_DEMO=off` for a real house (hides personas, enforces IITM emails), or leave it on for judging
 3. Migrate and seed the remote database once, from your machine (and again after adding migrations):
@@ -213,7 +227,7 @@ docker build -t stagecraft .
 docker run -p 3000:3000 -e STAGECRAFT_SECRET=... -v $PWD/.data:/app/.data stagecraft
 ```
 
-See `.env.example` for every option.
+See `.env.example` for every option, and [CREDENTIALS.md](CREDENTIALS.md) for the demo accounts to sign in with once it's running.
 
 ## Development
 ```bash
